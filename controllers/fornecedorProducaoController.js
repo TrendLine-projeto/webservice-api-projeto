@@ -1,0 +1,78 @@
+const FornecedorProducaoModel = require('../models/fornecedorProducao');
+require('dotenv').config();
+
+exports.criarFornecedor = (req, res) => {
+    const fornecedor = req.body;
+
+    if (!fornecedor.razaoSocial || !fornecedor.cnpj || !fornecedor.cliente_id) {
+        return res.status(400).send({
+            mensagem: 'Razão Social, CNPJ e Cliente ID são obrigatórios.'
+        });
+    }
+
+    FornecedorProducaoModel.criarFornecedor(fornecedor, (error, result) => {
+        if (error) {
+            if (error.tipo === 'ClienteNaoEncontrado') {
+                return res.status(404).send({ mensagem: error.mensagem });
+            }
+            return res.status(500).send({ error });
+        }
+
+        res.status(201).send({
+            mensagem: 'Fornecedor de produção criado com sucesso!',
+            fornecedorCriado: {
+                id: result.insertId,
+                ...fornecedor
+            }
+        });
+    });
+};
+
+exports.buscarFornecedoresPorCliente = (req, res) => {
+    const filtros = req.body;
+
+    if (!filtros.cliente_id) {
+        return res.status(400).send({ mensagem: 'Cliente ID é obrigatório.' });
+    }
+
+    FornecedorProducaoModel.buscarFornecedoresPorCliente(filtros, (error, resultado) => {
+        if (error) {
+            return res.status(500).send({ error });
+        }
+
+        if (resultado.totalRegistros === 0) {
+            return res.status(404).send({ mensagem: 'Nenhum fornecedor encontrado para esse cliente.' });
+        }
+
+        res.status(200).send({
+            mensagem: 'Fornecedores encontrados com sucesso!',
+            paginaAtual: filtros.pagina,
+            quantidadePorPagina: filtros.quantidadePorPagina,
+            totalRegistros: resultado.totalRegistros,
+            fornecedores: resultado.fornecedores
+        });
+    });
+};
+
+exports.buscarFornecedoresSimplesPorCliente = (req, res) => {
+    const { cliente_id } = req.body;
+
+    if (!cliente_id) {
+        return res.status(400).send({ mensagem: 'Cliente ID é obrigatório.' });
+    }
+
+    FornecedorProducaoModel.buscarFornecedoresSimplesPorCliente(cliente_id, (error, fornecedores) => {
+        if (error) {
+            return res.status(500).send({ error });
+        }
+
+        if (fornecedores.length === 0) {
+            return res.status(404).send({ mensagem: 'Nenhum fornecedor encontrado para este cliente.' });
+        }
+
+        res.status(200).send({
+            mensagem: 'Fornecedores encontrados com sucesso!',
+            fornecedores
+        });
+    });
+};

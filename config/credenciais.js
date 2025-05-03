@@ -1,0 +1,16 @@
+// config/credenciais.js
+require('dotenv').config();
+
+module.exports = {
+  type: process.env.GOOGLE_TYPE,
+  project_id: process.env.GOOGLE_PROJECT_ID,
+  private_key_id: process.env.GOOGLE_PRIVATE_KEY_ID,
+  private_key: "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC0mfhzi1m1gzlT\nbX5ZN4oiaYkAZD/aBDQUPg9h8H43wmua0K8hRdWy2PM91l/Mu3BD+Rg31WFOlpej\nkvGuKFq51cSi1tgJFURod3pUcWGJz1t+YVdVzGdpEnRLtc97CKuJXwFcbanjq8Dz\n2MjjUtelvtZzFzQVezbWmShrBSCGe0V9JfoogyC0TCiKjPhESjP4lxj468mTt8u3\nO3acdBlwIWPkDO7f8tasKpt/LXAPd1JBSPYacT01Mbk57sFx+Zb9R8KmrHBJG+Mx\nmChSmVIyq9Qlma1QhtKz11l0q7y20DHR4BfqAP/dISIpDBYGeCbupSSspgKxCbWg\n0LLF2rjtAgMBAAECggEADkpbqjrl0ZLNW7BfjcwzAjeTF2SXV9c6zro9adzHg/5+\nmLy4Ctw1hWYc0zEOGgtf3gUNGUfpX/hTDeav+H2pdih324HADPHxnImNtLZXBzpQ\n7U5jBH881IfZC2+auAvO1PsfRrLHvWPnC/SEqtYwiaUw32D/5k4+X9s1I0i/0tw2\nsGtHf632z0ybWg4b+ZkmEL36TUfPQSkGCUS/yinEGypyJ6R3l9a1KTI/x1qZoiOs\nLCKCzBoU7wjkMdYGop6471Ah3M8NpM2y7qHlRS2gmGQHrDr53CA4tizE81+mEvUl\nnYTYftxO3GUxsiuFJKIRGcr9a10r+Di4rKbp1wnUCQKBgQDcsmxIj+S76/W09FXh\ngZUIcmiVnGAo0IUTx1Iaz7Tfl3oS6ZFitKl/IUMLeAKUaCdGdhvF1B1oO2HbWVli\nfqIgNtbohpKHqGD/G/4pyAv0yMkGJXF7NdKkhqzWZyfF1Adpn42MYgW+/Igh6I7W\ndwNjuw/Qe+cTynSNa0YcF/pqGQKBgQDRfaEmiLZchoMezg/9UIFtIxPEU6qXUp4R\nT/OTEcUyxADv2KxVkUY1DYTrCqQwJOKDGKKYw8XHhJBbuYx5XdTNOcgC8RJlIteP\nnXP8vFfKCu+/b+bt6ZShkx7IApadcRIvjG4EO7uiY9J+3sVU+klFlYu3eQaMAEfU\njWJIF0CH9QKBgFEhViUmoJNknqKy349Sr5K3XDMDlWXrocAvmcM5b+hyKvIg4s1C\nVLzjYV4p8+jSkP2aFYOYAmd6zPJx2iYXH0pwXniEYAF2qJGfnMOHQr3twdh8k0cT\n9id9SrRWn4xd8Yuml8ZvkmUvOGwercOxZJGZBqtBoSTpXAdQ1Cknt2qhAoGBAI3I\n/XzbIrHUyIHc7a2BA1geWY6TIe5xGFKXTj/H0zPcvNWYTGtNe7sEf2WlOiLrk/Mu\nhT3nosC61AmAt7ac7x5HcTusdcrFniexZYM05iX06PckgaOcZ+BDdp3gQpgkoy5T\nWVK8Ku5pqVn85InzLAxQftOasfenaPZPCqnIMwDRAoGAWEsTlfpNhdeT/fp5y5I/\ntJCBpCDZuiQ9N8I167Zb8rsy+75fKI4YySZldhoczG1L9Ooo9CbeEgcgBQuP095S\nBup0hOZEcQqkP+UJdDR3STPxc2CMaZ4bNGD1XO4aE/iyqoV32mAOiM7RdCV1fcMo\nb+ogzMtSBRiiGPcOqV6TmFo=\n-----END PRIVATE KEY-----\n",
+  client_email: process.env.GOOGLE_CLIENT_EMAIL,
+  client_id: process.env.GOOGLE_CLIENT_ID,
+  auth_uri: process.env.GOOGLE_AUTH_URI,
+  token_uri: process.env.GOOGLE_TOKEN_URI,
+  auth_provider_x509_cert_url: process.env.GOOGLE_AUTH_PROVIDER_CERT_URL,
+  client_x509_cert_url: process.env.GOOGLE_CLIENT_CERT_URL,
+  universe_domain: process.env.GOOGLE_UNIVERSE_DOMAIN
+};
