@@ -44,10 +44,33 @@ export const buscarFornecedoresSimplesPorCliente = async (cliente_id: number) =>
 };
 
 export const buscarFornecedorPorId = async (id: number) => {
-  const { fornecedoresResult } = await FornecedorSupriModel.buscarFornecedorPorId(id);
+    const { fornecedoresResult } = await FornecedorSupriModel.buscarFornecedorPorId(id);
 
-  return {
-    totalRegistros: fornecedoresResult.length,
-    fornecedor: fornecedoresResult[0] || null
-  };
+    return {
+        totalRegistros: fornecedoresResult.length,
+        fornecedor: fornecedoresResult[0] || null
+    };
+};
+
+export const editarFornecedor = async (id: number, dados: any) => {
+    const sucesso = await FornecedorSupriModel.editarFornecedor(id, dados);
+    return {
+        success: sucesso
+    };
+};
+
+export const deletarFornecedor = async (id: number): Promise<{ success: boolean; mensagem: string }> => {
+    const { sucesso, linhasAfetadas } = await FornecedorSupriModel.deletarFornecedor(id);
+
+    if (!sucesso || linhasAfetadas === 0) {
+        return {
+            success: false,
+            mensagem: 'Fornecedor não encontrado ou já excluído.'
+        };
+    }
+
+    return {
+        success: true,
+        mensagem: 'Fornecedor excluído com sucesso!'
+    };
 };

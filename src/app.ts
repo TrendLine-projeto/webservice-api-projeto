@@ -10,6 +10,9 @@ import rotaProdutoSupri from '../src/routes/produtosSupri';
 import rotaFornecedorProd from '../src/routes/fornecedorProducao';
 import rotaLotes from '../src/routes/lotes';
 import rotaProdutosProducao from '../src/routes/produtosProducao';
+import rotaEstoqueMateriaPrima from '../src/routes/estoqueMateriaPrima';
+import rotaInsumosTecnicos from '../src/routes/estoqueInsumos';
+import rotaTipoProdutos from '../src/routes/tipoProdutos';
 
 const app = express();
 
@@ -44,6 +47,9 @@ app.use('/produtoSupri', rotaProdutoSupri);
 app.use('/fornecedorProd', rotaFornecedorProd);
 app.use('/lotes', rotaLotes);
 app.use('/produtorProducao', rotaProdutosProducao);
+app.use('/estoque', rotaEstoqueMateriaPrima);
+app.use('/estoqueInsumos', rotaInsumosTecnicos);
+app.use('/tipoProdutos', rotaTipoProdutos);
 
 app.use((req: Request, res: Response, next: NextFunction) => {
   const erro = new Error('Rota não encontrado');

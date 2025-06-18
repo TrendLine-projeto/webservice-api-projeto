@@ -4,6 +4,31 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+export const buscarFornecedorPorId = async (req: Request, res: Response) => {
+  try {
+    const id = Number(req.params.id);
+
+    if (!id || isNaN(id)) {
+      return res.status(400).send({ mensagem: 'ID inválido.' });
+    }
+
+    const resultado = await FornecedorProducaoModel.buscarFornecedorPorId(id);
+
+    if (!resultado || resultado.totalRegistros === 0) {
+      return res.status(404).send({ mensagem: 'Nenhum fornecedor encontrado' });
+    }
+
+    return res.status(200).send({
+      mensagem: 'Fornecedor encontrado com sucesso!',
+      fornecedor: resultado.fornecedor
+    });
+  } catch (error: any) {
+    if (error.tipo === 'Validacao') {
+      return res.status(400).send({ mensagem: error.mensagem });
+    }
+    return res.status(500).send({ error: error.message || error });
+  }
+};
 
 export const criarFornecedor = async (req: Request, res: Response) => {
     try {
@@ -71,4 +96,25 @@ export const buscarFornecedoresSimplesPorCliente = async (req: Request, res: Res
 
         return res.status(500).send({ mensagem: 'Erro ao buscar fornecedores simples.', error });
     }
+};
+
+export const deletarFornecedor = async (req: Request, res: Response) => {
+  try {
+    const id = Number(req.params.id);
+
+    if (!id || isNaN(id)) {
+      return res.status(400).send({ mensagem: 'ID inválido.' });
+    }
+
+    const resultado = await FornecedorProducaoModel.deletarFornecedor(id);
+
+    if (resultado.success) {
+      return res.status(200).json({ mensagem: resultado.mensagem });
+    } else {
+      return res.status(404).json({ mensagem: resultado.mensagem });
+    }
+  } catch (error) {
+    console.error('Erro ao deletar fornecedor:', error);
+    return res.status(500).json({ mensagem: 'Erro interno no servidor.' });
+  }
 };

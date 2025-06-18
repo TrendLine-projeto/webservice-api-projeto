@@ -98,3 +98,46 @@ export const buscarFornecedorPorId = async (req: Request, res: Response) => {
     return res.status(500).send({ error: error.message || error });
   }
 };
+
+export const editarFornecedor = async (req: Request, res: Response) => {
+  try {
+    const id = Number(req.params.id);
+    const dadosAtualizados = req.body;
+
+    if (!id || isNaN(id)) {
+      return res.status(400).send({ mensagem: 'ID inválido.' });
+    }
+
+    const resultado = await FornecedorSupriService.editarFornecedor(id, dadosAtualizados);
+
+    if (resultado.success) {
+      return res.status(200).send({ mensagem: 'Fornecedor atualizado com sucesso!' });
+    } else {
+      return res.status(500).send({ mensagem: 'Erro ao atualizar o fornecedor.' });
+    }
+  } catch (error: any) {
+    console.error('Erro no controller editarFornecedor:', error);
+    return res.status(500).send({ mensagem: 'Erro interno ao editar fornecedor.' });
+  }
+};
+
+export const deletarFornecedor = async (req: Request, res: Response) => {
+  try {
+    const id = Number(req.params.id);
+
+    if (!id || isNaN(id)) {
+      return res.status(400).send({ mensagem: 'ID inválido.' });
+    }
+
+    const resultado = await FornecedorSupriService.deletarFornecedor(id);
+
+    if (resultado.success) {
+      return res.status(200).json({ mensagem: resultado.mensagem });
+    } else {
+      return res.status(404).json({ mensagem: resultado.mensagem });
+    }
+  } catch (error) {
+    console.error('Erro ao deletar fornecedor:', error);
+    return res.status(500).json({ mensagem: 'Erro interno no servidor.' });
+  }
+};

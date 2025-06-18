@@ -17,6 +17,14 @@
     ],
     "tags": [
         {
+            "name": "Estoque Insumos Tecnicos",
+            "description": "Estoque Insumos Tecnicos"
+        },
+        {
+            "name": "Estoque Matéria-prima",
+            "description": "Estoque Matéria-prima"
+        },
+        {
             "name": "Produtos producao",
             "description": "Produto vinculados aos lotes"
         },
@@ -35,6 +43,10 @@
         {
             "name": "Produtos Suprimentos",
             "description": "Produtos Suprimentos"
+        },
+        {
+            "name": "Categoria Produtos",
+            "description": "Categoria Produtos"
         },
         {
             "name": "Usuarios",
@@ -85,6 +97,103 @@
                         "example": "novo@email.com"
                     }
                 }
+            },
+            "Fornecedor": {
+                "type": "object",
+                "properties": {
+                    "razaoSocial": {
+                        "type": "string",
+                        "example": "Hasbro do Brasil"
+                    },
+                    "nomeFantasia": {
+                        "type": "string",
+                        "example": "Hasbro"
+                    },
+                    "cnpj": {
+                        "type": "string",
+                        "example": "08.743.754/0004-96"
+                    },
+                    "inscricaoEstadual": {
+                        "type": "string",
+                        "example": "123456789"
+                    },
+                    "email": {
+                        "type": "string",
+                        "example": "comercial@hasbro.com"
+                    },
+                    "telefone": {
+                        "type": "string",
+                        "example": "(11) 4002-8922"
+                    },
+                    "celular": {
+                        "type": "string",
+                        "example": "(11) 98888-7777"
+                    },
+                    "responsavel": {
+                        "type": "string",
+                        "example": "José da Silva"
+                    },
+                    "site": {
+                        "type": "string",
+                        "example": "https://www.hasbro.com"
+                    },
+                    "tipoFornecedor": {
+                        "type": "string",
+                        "example": "Nacional"
+                    },
+                    "categoria": {
+                        "type": "string",
+                        "example": "Brinquedos"
+                    },
+                    "endereco": {
+                        "type": "string",
+                        "example": "Rua Exemplo, 123"
+                    },
+                    "bairro": {
+                        "type": "string",
+                        "example": "Centro"
+                    },
+                    "cidade": {
+                        "type": "string",
+                        "example": "São Paulo"
+                    },
+                    "estado": {
+                        "type": "string",
+                        "example": "SP"
+                    },
+                    "cep": {
+                        "type": "string",
+                        "example": "01000-000"
+                    },
+                    "pais": {
+                        "type": "string",
+                        "example": "Brasil"
+                    },
+                    "observacoes": {
+                        "type": "string",
+                        "example": "Fornecedor homologado."
+                    },
+                    "ativo": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "cliente_id": {
+                        "type": "integer",
+                        "example": 1
+                    }
+                },
+                "required": [
+                    "razaoSocial",
+                    "cnpj",
+                    "email",
+                    "telefone",
+                    "responsavel",
+                    "tipoFornecedor",
+                    "cidade",
+                    "estado",
+                    "ativo",
+                    "cliente_id"
+                ]
             },
             "usuarioAutenticado": {
                 "type": "object",
@@ -867,6 +976,139 @@
                 }
             }
         },
+        "/fornecedorProd/fornecedores_producao/{id}": {
+            "get": {
+                "tags": [
+                    "Fornecedores Producao"
+                ],
+                "summary": "Buscar fornecedor de produtos por ID",
+                "description": "Retorna os dados de um fornecedor de produtos com base no ID fornecido.",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "description": "ID do fornecedor de produtos",
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Fornecedor encontrado com sucesso!",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "mensagem": {
+                                            "type": "string",
+                                            "example": "Fornecedor encontrado com sucesso!"
+                                        },
+                                        "fornecedor": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "razaoSocial": {
+                                                    "type": "string",
+                                                    "example": "Hasbro do Brasil"
+                                                },
+                                                "nomeFantasia": {
+                                                    "type": "string",
+                                                    "example": "Hasbro"
+                                                },
+                                                "cnpj": {
+                                                    "type": "string",
+                                                    "example": "08.743.754/0004-96"
+                                                },
+                                                "email": {
+                                                    "type": "string",
+                                                    "example": "comercial@hasbro.com"
+                                                },
+                                                "telefone": {
+                                                    "type": "string",
+                                                    "example": "(11) 4002-8922"
+                                                },
+                                                "celular": {
+                                                    "type": "string",
+                                                    "example": "(11) 98888-7777"
+                                                },
+                                                "responsavel": {
+                                                    "type": "string",
+                                                    "example": "José da Silva"
+                                                },
+                                                "site": {
+                                                    "type": "string",
+                                                    "example": "https://www.hasbro.com"
+                                                },
+                                                "tipoFornecedor": {
+                                                    "type": "string",
+                                                    "example": "Nacional"
+                                                },
+                                                "categoria": {
+                                                    "type": "string",
+                                                    "example": "Brinquedos"
+                                                },
+                                                "endereco": {
+                                                    "type": "string",
+                                                    "example": "Rua Exemplo, 123"
+                                                },
+                                                "bairro": {
+                                                    "type": "string",
+                                                    "example": "Centro"
+                                                },
+                                                "cidade": {
+                                                    "type": "string",
+                                                    "example": "São Paulo"
+                                                },
+                                                "estado": {
+                                                    "type": "string",
+                                                    "example": "SP"
+                                                },
+                                                "cep": {
+                                                    "type": "string",
+                                                    "example": "01000-000"
+                                                },
+                                                "pais": {
+                                                    "type": "string",
+                                                    "example": "Brasil"
+                                                },
+                                                "observacoes": {
+                                                    "type": "string",
+                                                    "example": "Fornecedor homologado."
+                                                },
+                                                "ativo": {
+                                                    "type": "boolean",
+                                                    "example": true
+                                                },
+                                                "cliente_id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "ID inválido"
+                    },
+                    "404": {
+                        "description": "Nenhum fornecedor encontrado"
+                    },
+                    "500": {
+                        "description": "Erro interno do servidor"
+                    }
+                }
+            }
+        },
         "/fornecedorProd/fornecedores_producao": {
             "post": {
                 "tags": [
@@ -1129,6 +1371,93 @@
                     },
                     "500": {
                         "description": "Erro interno do servidor."
+                    }
+                }
+            }
+        },
+        "/fornecedorProd/fornecedores_producao/deletar/{id}": {
+            "delete": {
+                "tags": [
+                    "Fornecedores Producao"
+                ],
+                "summary": "Excluir um fornecedor",
+                "description": "Remove um fornecedor do banco de dados com base no ID fornecido.",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "description": "ID do fornecedor a ser excluído",
+                        "schema": {
+                            "type": "integer",
+                            "example": 42
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Fornecedor excluído com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "mensagem": {
+                                            "type": "string",
+                                            "example": "Fornecedor excluído com sucesso!"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "ID inválido fornecido",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "mensagem": {
+                                            "type": "string",
+                                            "example": "ID inválido."
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Fornecedor não encontrado ou já excluído",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "mensagem": {
+                                            "type": "string",
+                                            "example": "Fornecedor não encontrado ou já excluído."
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erro interno ao deletar fornecedor",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "mensagem": {
+                                            "type": "string",
+                                            "example": "Erro interno ao deletar fornecedor."
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -1529,6 +1858,1949 @@
                 }
             }
         },
+        "/fornecedorSupri/fornecedores_suprimentos/editar/{id}": {
+            "put": {
+                "summary": "Atualiza os dados de um fornecedor",
+                "description": "Atualiza um fornecedor existente com base no ID.",
+                "tags": [
+                    "Fornecedores Suprimentos"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID do fornecedor a ser atualizado",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Fornecedor"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Fornecedor atualizado com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "mensagem": {
+                                            "type": "string",
+                                            "example": "Fornecedor atualizado com sucesso!"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "ID inválido ou dados faltando"
+                    },
+                    "404": {
+                        "description": "Fornecedor não encontrado"
+                    },
+                    "500": {
+                        "description": "Erro interno do servidor"
+                    }
+                }
+            },
+            "/produtoSupri/produtos_suprimentos": {
+                "post": {
+                    "tags": [
+                        "Produtos Suprimentos"
+                    ],
+                    "summary": "Cadastrar novo produto de suprimentos",
+                    "description": "Cria um novo produto de suprimentos associado a um fornecedor.",
+                    "requestBody": {
+                        "required": true,
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "nomeProduto": {
+                                            "type": "string",
+                                            "example": "Caixa de Brinquedos"
+                                        },
+                                        "descricao": {
+                                            "type": "string",
+                                            "example": "Contém 10 unidades de brinquedos variados"
+                                        },
+                                        "codigoInterno": {
+                                            "type": "string",
+                                            "example": "BRINQ-001"
+                                        },
+                                        "codigoFornecedor": {
+                                            "type": "string",
+                                            "example": "HAS-BOX-2025"
+                                        },
+                                        "unidadeMedida": {
+                                            "type": "string",
+                                            "example": "CX"
+                                        },
+                                        "precoUnitario": {
+                                            "type": "number",
+                                            "format": "float",
+                                            "example": 150.00
+                                        },
+                                        "estoqueMinimo": {
+                                            "type": "integer",
+                                            "example": 5
+                                        },
+                                        "estoqueAtual": {
+                                            "type": "integer",
+                                            "example": 20
+                                        },
+                                        "ativo": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "fornecedor_id": {
+                                            "type": "integer",
+                                            "example": 3
+                                        }
+                                    },
+                                    "required": [
+                                        "nomeProduto",
+                                        "descricao",
+                                        "fornecedor_id"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "responses": {
+                        "201": {
+                            "description": "Produto de suprimentos criado com sucesso."
+                        },
+                        "400": {
+                            "description": "Campos obrigatórios não preenchidos."
+                        },
+                        "404": {
+                            "description": "Fornecedor não encontrado."
+                        },
+                        "500": {
+                            "description": "Erro interno do servidor."
+                        }
+                    }
+                }
+            },
+            "/produtoSupri/produtos_suprimentos/buscar": {
+                "post": {
+                    "tags": [
+                        "Produtos Suprimentos"
+                    ],
+                    "summary": "Buscar produtos com filtros e paginação",
+                    "description": "Busca produtos de suprimentos de um cliente, com suporte a filtros dinâmicos e paginação.",
+                    "requestBody": {
+                        "required": true,
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "cliente_id": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "pagina": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "quantidadePorPagina": {
+                                            "type": "integer",
+                                            "example": 10
+                                        },
+                                        "nomeProduto": {
+                                            "type": "string",
+                                            "example": "Caixa de Brinquedos",
+                                            "nullable": true
+                                        },
+                                        "codigoInterno": {
+                                            "type": "string",
+                                            "example": "BRINQ-001",
+                                            "nullable": true
+                                        },
+                                        "unidadeMedida": {
+                                            "type": "string",
+                                            "example": "CX",
+                                            "nullable": true
+                                        },
+                                        "ativo": {
+                                            "type": "boolean",
+                                            "example": true,
+                                            "nullable": true
+                                        }
+                                    },
+                                    "required": [
+                                        "cliente_id"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "responses": {
+                        "200": {
+                            "description": "Produtos encontrados com sucesso."
+                        },
+                        "400": {
+                            "description": "Cliente ID não informado."
+                        },
+                        "404": {
+                            "description": "Nenhum produto encontrado."
+                        },
+                        "500": {
+                            "description": "Erro interno do servidor."
+                        }
+                    }
+                }
+            },
+            "/produtoSupri/produtos_suprimentos/lista_simples": {
+                "post": {
+                    "tags": [
+                        "Produtos Suprimentos"
+                    ],
+                    "summary": "Listar produtos simples por fornecedor",
+                    "description": "Retorna todos os produtos de um fornecedor, apenas com ID e Nome, sem paginação.",
+                    "requestBody": {
+                        "required": true,
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "fornecedor_id": {
+                                            "type": "integer",
+                                            "example": 1
+                                        }
+                                    },
+                                    "required": [
+                                        "fornecedor_id"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "responses": {
+                        "200": {
+                            "description": "Produtos encontrados com sucesso",
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "type": "object",
+                                        "properties": {
+                                            "mensagem": {
+                                                "type": "string",
+                                                "example": "Produtos encontrados com sucesso!"
+                                            },
+                                            "produtos": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "integer",
+                                                            "example": 12
+                                                        },
+                                                        "nomeProduto": {
+                                                            "type": "string",
+                                                            "example": "Caixa de Brinquedos"
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "400": {
+                            "description": "Fornecedor ID não informado."
+                        },
+                        "404": {
+                            "description": "Nenhum produto encontrado."
+                        },
+                        "500": {
+                            "description": "Erro interno do servidor."
+                        }
+                    }
+                }
+            },
+            "/usuarios/login": {
+                "post": {
+                    "tags": [
+                        "Usuarios"
+                    ],
+                    "summary": "Login de usuario",
+                    "description": "Login de usuario",
+                    "requestBody": {
+                        "required": true,
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/usuarioLogin"
+                                }
+                            }
+                        }
+                    },
+                    "responses": {
+                        "202": {
+                            "description": "Produto criado com sucesso"
+                        },
+                        "400": {
+                            "description": "Parâmetros inválidos"
+                        },
+                        "500": {
+                            "description": "Erro interno do servidor"
+                        }
+                    }
+                }
+            },
+            "/usuarios/cadastro": {
+                "post": {
+                    "tags": [
+                        "Usuarios"
+                    ],
+                    "summary": "Criar usuario",
+                    "description": "Criar usuario",
+                    "requestBody": {
+                        "required": true,
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/usuarioCreate"
+                                }
+                            }
+                        }
+                    },
+                    "responses": {
+                        "202": {
+                            "description": "Usuario criado com sucesso"
+                        },
+                        "400": {
+                            "description": "Parâmetros inválidos"
+                        },
+                        "500": {
+                            "description": "Erro interno do servidor"
+                        }
+                    }
+                }
+            },
+            "/usuarios/validartoken": {
+                "get": {
+                    "tags": [
+                        "Usuarios"
+                    ],
+                    "summary": "Validar token JWT",
+                    "description": "Valida o token JWT enviado no header Authorization e retorna os dados do usuário autenticado.",
+                    "security": [
+                        {
+                            "bearerAuth": []
+                        }
+                    ],
+                    "responses": {
+                        "200": {
+                            "description": "Usuário autenticado com sucesso",
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "$ref": "#/components/schemas/usuarioAutenticado"
+                                    }
+                                }
+                            }
+                        },
+                        "401": {
+                            "description": "Token inválido ou expirado"
+                        },
+                        "500": {
+                            "description": "Erro interno do servidor"
+                        }
+                    }
+                }
+            }
+        },
+        "/fornecedorSupri/fornecedores_suprimentos/deletar/{id}": {
+            "delete": {
+                "tags": [
+                    "Fornecedores Suprimentos"
+                ],
+                "summary": "Excluir um fornecedor",
+                "description": "Remove um fornecedor do banco de dados com base no ID fornecido.",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "description": "ID do fornecedor a ser excluído",
+                        "schema": {
+                            "type": "integer",
+                            "example": 42
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Fornecedor excluído com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "mensagem": {
+                                            "type": "string",
+                                            "example": "Fornecedor excluído com sucesso!"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "ID inválido fornecido",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "mensagem": {
+                                            "type": "string",
+                                            "example": "ID inválido."
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Fornecedor não encontrado ou já excluído",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "mensagem": {
+                                            "type": "string",
+                                            "example": "Fornecedor não encontrado ou já excluído."
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erro interno ao deletar fornecedor",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "mensagem": {
+                                            "type": "string",
+                                            "example": "Erro interno ao deletar fornecedor."
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/estoque/estoque_materiaprima/{id}": {
+            "get": {
+                "tags": [
+                    "Estoque Matéria-prima"
+                ],
+                "summary": "Buscar item de matéria-prima por ID",
+                "description": "Retorna os dados de um item do estoque de matéria-prima com base no ID fornecido.",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "description": "ID do item da matéria-prima",
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Item encontrado com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "mensagem": {
+                                            "type": "string",
+                                            "example": "Item encontrado com sucesso!"
+                                        },
+                                        "item": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "nome": {
+                                                    "type": "string",
+                                                    "example": "Tecido Tricoline Azul"
+                                                },
+                                                "tipo": {
+                                                    "type": "string",
+                                                    "example": "tecido"
+                                                },
+                                                "descricao": {
+                                                    "type": "string",
+                                                    "example": "Tecido 100% algodão para confecção."
+                                                },
+                                                "unidade": {
+                                                    "type": "string",
+                                                    "example": "m"
+                                                },
+                                                "quantidade": {
+                                                    "type": "number",
+                                                    "format": "decimal",
+                                                    "example": 120.5
+                                                },
+                                                "estoqueMinimo": {
+                                                    "type": "number",
+                                                    "format": "decimal",
+                                                    "example": 10
+                                                },
+                                                "largura": {
+                                                    "type": "number",
+                                                    "format": "decimal",
+                                                    "example": 150
+                                                },
+                                                "comprimento": {
+                                                    "type": "number",
+                                                    "format": "decimal",
+                                                    "example": 200
+                                                },
+                                                "gramatura": {
+                                                    "type": "number",
+                                                    "format": "decimal",
+                                                    "example": 100
+                                                },
+                                                "cor": {
+                                                    "type": "string",
+                                                    "example": "Azul Marinho"
+                                                },
+                                                "marca": {
+                                                    "type": "string",
+                                                    "example": "Santista"
+                                                },
+                                                "localArmazenamento": {
+                                                    "type": "string",
+                                                    "example": "Prateleira 3B"
+                                                },
+                                                "codigoBarras": {
+                                                    "type": "string",
+                                                    "example": "7891234567890"
+                                                },
+                                                "precoUnitario": {
+                                                    "type": "number",
+                                                    "format": "decimal",
+                                                    "example": 29.9
+                                                },
+                                                "fornecedor": {
+                                                    "type": "string",
+                                                    "example": "Têxteis Brasil Ltda"
+                                                },
+                                                "dataUltimaEntrada": {
+                                                    "type": "string",
+                                                    "format": "date",
+                                                    "example": "2024-05-20"
+                                                },
+                                                "observacoes": {
+                                                    "type": "string",
+                                                    "example": "Entrada com NF-e 123456"
+                                                },
+                                                "criadoEm": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2024-01-01T10:00:00Z"
+                                                },
+                                                "atualizadoEm": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2024-06-10T15:30:00Z"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Item não encontrado"
+                    },
+                    "500": {
+                        "description": "Erro interno do servidor"
+                    }
+                }
+            }
+        },
+        "/estoque/estoque_materiaprima/lista_por_fornecedor": {
+            "post": {
+                "tags": [
+                    "Estoque Matéria-prima"
+                ],
+                "summary": "Buscar matérias-primas por ID do fornecedor",
+                "description": "Retorna lista de matérias-primas (id e nome) associadas ao ID do fornecedor fornecido no corpo da requisição.",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "idFornecedor_suprimentos": {
+                                        "type": "integer",
+                                        "example": 5,
+                                        "description": "ID do fornecedor"
+                                    }
+                                },
+                                "required": [
+                                    "idFornecedor_suprimentos"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Matérias-primas encontradas com sucesso!",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "mensagem": {
+                                            "type": "string",
+                                            "example": "Matérias-primas encontradas com sucesso!"
+                                        },
+                                        "materias": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": 12
+                                                    },
+                                                    "nome": {
+                                                        "type": "string",
+                                                        "example": "Tecido Oxford Preto"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "ID do fornecedor inválido"
+                    },
+                    "404": {
+                        "description": "Nenhuma matéria-prima encontrada para este fornecedor"
+                    },
+                    "500": {
+                        "description": "Erro interno do servidor"
+                    }
+                }
+            }
+        },
+        "/estoque/estoque_materiaprima": {
+            "post": {
+                "tags": [
+                    "Estoque Matéria-prima"
+                ],
+                "summary": "Cadastrar nova matéria-prima",
+                "description": "Cria um novo registro de matéria-prima no estoque.",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "nome": {
+                                        "type": "string",
+                                        "example": "Tecido Algodão Cru"
+                                    },
+                                    "tipo": {
+                                        "type": "string",
+                                        "example": "tecido"
+                                    },
+                                    "descricao": {
+                                        "type": "string",
+                                        "example": "Tecido cru 100% algodão"
+                                    },
+                                    "unidade": {
+                                        "type": "string",
+                                        "example": "m"
+                                    },
+                                    "quantidade": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 50
+                                    },
+                                    "estoqueMinimo": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 10
+                                    },
+                                    "largura": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 1.5
+                                    },
+                                    "comprimento": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 20
+                                    },
+                                    "gramatura": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 120
+                                    },
+                                    "cor": {
+                                        "type": "string",
+                                        "example": "Bege"
+                                    },
+                                    "marca": {
+                                        "type": "string",
+                                        "example": "TexFiber"
+                                    },
+                                    "localArmazenamento": {
+                                        "type": "string",
+                                        "example": "Estante A3 - Prateleira 2"
+                                    },
+                                    "codigoBarras": {
+                                        "type": "string",
+                                        "example": "7894561239874"
+                                    },
+                                    "precoUnitario": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 12.90
+                                    },
+                                    "fornecedor": {
+                                        "type": "string",
+                                        "example": "TexFiber Tecidos LTDA"
+                                    },
+                                    "dataUltimaEntrada": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2024-12-01"
+                                    },
+                                    "observacoes": {
+                                        "type": "string",
+                                        "example": "Repor antes do mês de novembro"
+                                    },
+                                    "idFornecedor_suprimentos": {
+                                        "type": "integer",
+                                        "example": 5
+                                    },
+                                    "idCliente": {
+                                        "type": "integer",
+                                        "example": 3,
+                                        "description": "ID do cliente que possui a matéria-prima"
+                                    }
+                                },
+                                "required": [
+                                    "nome",
+                                    "quantidade",
+                                    "unidade",
+                                    "idFornecedor_suprimentos"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Matéria-prima cadastrada com sucesso."
+                    },
+                    "400": {
+                        "description": "Erro de validação"
+                    },
+                    "500": {
+                        "description": "Erro interno do servidor"
+                    }
+                }
+            }
+        },
+        "/estoque/estoque_materiaprima/buscar": {
+            "post": {
+                "tags": [
+                    "Estoque Matéria-prima"
+                ],
+                "summary": "Buscar itens de matéria-prima com filtros",
+                "description": "Retorna uma lista paginada de registros da tabela de matéria-prima com base em filtros opcionais.",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "idCliente": {
+                                        "type": "integer",
+                                        "example": 3,
+                                        "description": "ID do cliente que possui a matéria-prima"
+                                    },
+                                    "idFornecedor_suprimentos": {
+                                        "type": "integer",
+                                        "example": 7,
+                                        "description": "ID do fornecedor de suprimentos (chave estrangeira)"
+                                    },
+                                    "pagina": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "quantidadePorPagina": {
+                                        "type": "integer",
+                                        "example": 10
+                                    },
+                                    "nome": {
+                                        "type": "string",
+                                        "example": "Tecido Tricoline"
+                                    },
+                                    "tipo": {
+                                        "type": "string",
+                                        "example": "tecido"
+                                    },
+                                    "cor": {
+                                        "type": "string",
+                                        "example": "Azul Marinho"
+                                    },
+                                    "marca": {
+                                        "type": "string",
+                                        "example": "Têxtil Brasil"
+                                    },
+                                    "unidade": {
+                                        "type": "string",
+                                        "example": "m"
+                                    },
+                                    "localArmazenamento": {
+                                        "type": "string",
+                                        "example": "Prateleira 2A"
+                                    }
+                                },
+                                "required": [
+                                    "idFornecedor_suprimentos"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Consulta realizada com sucesso.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "mensagem": {
+                                            "type": "string",
+                                            "example": "Materiais encontrados com sucesso!"
+                                        },
+                                        "paginaAtual": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "quantidadePorPagina": {
+                                            "type": "integer",
+                                            "example": 10
+                                        },
+                                        "totalRegistros": {
+                                            "type": "integer",
+                                            "example": 25
+                                        },
+                                        "materiais": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": 1
+                                                    },
+                                                    "nome": {
+                                                        "type": "string",
+                                                        "example": "Tecido Tricoline Azul Marinho"
+                                                    },
+                                                    "tipo": {
+                                                        "type": "string",
+                                                        "example": "tecido"
+                                                    },
+                                                    "descricao": {
+                                                        "type": "string",
+                                                        "example": "Tecido leve ideal para patchwork e roupas leves."
+                                                    },
+                                                    "unidade": {
+                                                        "type": "string",
+                                                        "example": "m"
+                                                    },
+                                                    "quantidade": {
+                                                        "type": "number",
+                                                        "example": 120.5
+                                                    },
+                                                    "estoqueMinimo": {
+                                                        "type": "number",
+                                                        "example": 50.0
+                                                    },
+                                                    "largura": {
+                                                        "type": "number",
+                                                        "example": 150.0
+                                                    },
+                                                    "comprimento": {
+                                                        "type": "number",
+                                                        "example": null
+                                                    },
+                                                    "gramatura": {
+                                                        "type": "number",
+                                                        "example": 120.0
+                                                    },
+                                                    "cor": {
+                                                        "type": "string",
+                                                        "example": "Azul Marinho"
+                                                    },
+                                                    "marca": {
+                                                        "type": "string",
+                                                        "example": "Têxtil Brasil"
+                                                    },
+                                                    "localArmazenamento": {
+                                                        "type": "string",
+                                                        "example": "Prateleira 2A"
+                                                    },
+                                                    "codigoBarras": {
+                                                        "type": "string",
+                                                        "example": "7894561230123"
+                                                    },
+                                                    "precoUnitario": {
+                                                        "type": "number",
+                                                        "example": 12.9
+                                                    },
+                                                    "fornecedor": {
+                                                        "type": "string",
+                                                        "example": "Tecidos Sul LTDA"
+                                                    },
+                                                    "dataUltimaEntrada": {
+                                                        "type": "string",
+                                                        "format": "date",
+                                                        "example": "2025-06-10"
+                                                    },
+                                                    "observacoes": {
+                                                        "type": "string",
+                                                        "example": "Lote 205-B"
+                                                    },
+                                                    "criadoEm": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2025-06-13T19:51:22Z"
+                                                    },
+                                                    "atualizadoEm": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2025-06-13T19:51:22Z"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erro interno ao buscar dados de matéria-prima."
+                    }
+                }
+            }
+        },
+        "/estoque/estoque_materiaprima/deletar/{id}": {
+            "delete": {
+                "tags": [
+                    "Estoque Matéria-prima"
+                ],
+                "summary": "Excluir item de matéria-prima por ID",
+                "description": "Remove permanentemente um registro de matéria-prima do banco de dados com base no ID fornecido.",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "description": "ID do item de matéria-prima a ser excluído",
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Item excluído com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "mensagem": {
+                                            "type": "string",
+                                            "example": "Registro excluído com sucesso."
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "ID inválido para exclusão",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "mensagem": {
+                                            "type": "string",
+                                            "example": "ID inválido para exclusão."
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Registro não encontrado para exclusão",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "mensagem": {
+                                            "type": "string",
+                                            "example": "Registro não encontrado para exclusão."
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erro interno ao excluir registro",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "mensagem": {
+                                            "type": "string",
+                                            "example": "Erro ao excluir registro."
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Detalhes do erro interno"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/estoque/estoque_materiaprima/editar/{id}": {
+            "put": {
+                "tags": [
+                    "Estoque Matéria-prima"
+                ],
+                "summary": "Atualizar item de matéria-prima",
+                "description": "Atualiza os dados de um item de matéria-prima com base no ID fornecido.",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "description": "ID do item de matéria-prima a ser atualizado",
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "nome": {
+                                        "type": "string",
+                                        "example": "Tecido Tricoline Verde"
+                                    },
+                                    "tipo": {
+                                        "type": "string",
+                                        "example": "tecido"
+                                    },
+                                    "descricao": {
+                                        "type": "string",
+                                        "example": "Tecido para confecção leve"
+                                    },
+                                    "unidade": {
+                                        "type": "string",
+                                        "example": "m"
+                                    },
+                                    "quantidade": {
+                                        "type": "number",
+                                        "example": 75.0
+                                    },
+                                    "estoqueMinimo": {
+                                        "type": "number",
+                                        "example": 20.0
+                                    },
+                                    "largura": {
+                                        "type": "number",
+                                        "example": 140.0
+                                    },
+                                    "comprimento": {
+                                        "type": "number",
+                                        "example": null
+                                    },
+                                    "gramatura": {
+                                        "type": "number",
+                                        "example": 110.0
+                                    },
+                                    "cor": {
+                                        "type": "string",
+                                        "example": "Verde Bandeira"
+                                    },
+                                    "marca": {
+                                        "type": "string",
+                                        "example": "Têxtil Brasil"
+                                    },
+                                    "localArmazenamento": {
+                                        "type": "string",
+                                        "example": "Prateleira 1B"
+                                    },
+                                    "codigoBarras": {
+                                        "type": "string",
+                                        "example": "7894561230456"
+                                    },
+                                    "precoUnitario": {
+                                        "type": "number",
+                                        "example": 14.50
+                                    },
+                                    "fornecedor": {
+                                        "type": "string",
+                                        "example": "Tecidos Sul LTDA"
+                                    },
+                                    "dataUltimaEntrada": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2025-06-15"
+                                    },
+                                    "observacoes": {
+                                        "type": "string",
+                                        "example": "Remessa complementar"
+                                    },
+                                    "idFornecedor_suprimentos": {
+                                        "type": "integer",
+                                        "example": 7
+                                    }
+                                },
+                                "required": [
+                                    "nome",
+                                    "tipo",
+                                    "quantidade",
+                                    "unidade",
+                                    "idFornecedor_suprimentos"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Item atualizado com sucesso"
+                    },
+                    "400": {
+                        "description": "Erro de validação"
+                    },
+                    "404": {
+                        "description": "Registro não encontrado"
+                    },
+                    "500": {
+                        "description": "Erro interno do servidor"
+                    }
+                }
+            }
+        },
+
+        "/estoqueInsumos/estoque_insumo/{id}": {
+            "get": {
+                "tags": [
+                    "Estoque Insumos Tecnicos"
+                ],
+                "summary": "Buscar item de Insumo Técnico por ID",
+                "description": "Retorna os dados de um item do estoque de Insumo Técnico com base no ID fornecido.",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "description": "ID do item da Insumo Técnico",
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Item encontrado com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "mensagem": {
+                                            "type": "string",
+                                            "example": "Item encontrado com sucesso!"
+                                        },
+                                        "item": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "nome": {
+                                                    "type": "string",
+                                                    "example": "Tecido Tricoline Azul"
+                                                },
+                                                "tipo": {
+                                                    "type": "string",
+                                                    "example": "tecido"
+                                                },
+                                                "descricao": {
+                                                    "type": "string",
+                                                    "example": "Tecido 100% algodão para confecção."
+                                                },
+                                                "unidade": {
+                                                    "type": "string",
+                                                    "example": "m"
+                                                },
+                                                "quantidade": {
+                                                    "type": "number",
+                                                    "format": "decimal",
+                                                    "example": 120.5
+                                                },
+                                                "estoqueMinimo": {
+                                                    "type": "number",
+                                                    "format": "decimal",
+                                                    "example": 10
+                                                },
+                                                "largura": {
+                                                    "type": "number",
+                                                    "format": "decimal",
+                                                    "example": 150
+                                                },
+                                                "comprimento": {
+                                                    "type": "number",
+                                                    "format": "decimal",
+                                                    "example": 200
+                                                },
+                                                "gramatura": {
+                                                    "type": "number",
+                                                    "format": "decimal",
+                                                    "example": 100
+                                                },
+                                                "cor": {
+                                                    "type": "string",
+                                                    "example": "Azul Marinho"
+                                                },
+                                                "marca": {
+                                                    "type": "string",
+                                                    "example": "Santista"
+                                                },
+                                                "localArmazenamento": {
+                                                    "type": "string",
+                                                    "example": "Prateleira 3B"
+                                                },
+                                                "codigoBarras": {
+                                                    "type": "string",
+                                                    "example": "7891234567890"
+                                                },
+                                                "precoUnitario": {
+                                                    "type": "number",
+                                                    "format": "decimal",
+                                                    "example": 29.9
+                                                },
+                                                "fornecedor": {
+                                                    "type": "string",
+                                                    "example": "Têxteis Brasil Ltda"
+                                                },
+                                                "dataUltimaEntrada": {
+                                                    "type": "string",
+                                                    "format": "date",
+                                                    "example": "2024-05-20"
+                                                },
+                                                "observacoes": {
+                                                    "type": "string",
+                                                    "example": "Entrada com NF-e 123456"
+                                                },
+                                                "criadoEm": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2024-01-01T10:00:00Z"
+                                                },
+                                                "atualizadoEm": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2024-06-10T15:30:00Z"
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Item não encontrado"
+                    },
+                    "500": {
+                        "description": "Erro interno do servidor"
+                    }
+                }
+            }
+        },
+        "/estoqueInsumos/estoque_insumo/lista_por_fornecedor": {
+            "post": {
+                "tags": [
+                    "Estoque Insumos Tecnicos"
+                ],
+                "summary": "Buscar Insumo Técnico por ID do fornecedor",
+                "description": "Retorna lista de Insumo Técnico (id e nome) associadas ao ID do fornecedor fornecido no corpo da requisição.",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "idFornecedor_suprimentos": {
+                                        "type": "integer",
+                                        "example": 5,
+                                        "description": "ID do fornecedor"
+                                    }
+                                },
+                                "required": [
+                                    "idFornecedor_suprimentos"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Insumos Técnicos encontrados com sucesso!",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "mensagem": {
+                                            "type": "string",
+                                            "example": "Insumos Técnicos encontrados com sucesso!"
+                                        },
+                                        "materias": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": 12
+                                                    },
+                                                    "nome": {
+                                                        "type": "string",
+                                                        "example": "Tecido Oxford Preto"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "ID do fornecedor inválido"
+                    },
+                    "404": {
+                        "description": "Nenhuma Insumo Técnico encontrada para este fornecedor"
+                    },
+                    "500": {
+                        "description": "Erro interno do servidor"
+                    }
+                }
+            }
+        },
+        "/estoqueInsumos/estoque_insumo": {
+            "post": {
+                "tags": [
+                    "Estoque Insumos Tecnicos"
+                ],
+                "summary": "Cadastrar novo Insumo Técnico",
+                "description": "Cria um novo registro de Insumo Técnico no estoque.",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "nome": {
+                                        "type": "string",
+                                        "example": "Tecido Algodão Cru"
+                                    },
+                                    "tipo": {
+                                        "type": "string",
+                                        "example": "tecido"
+                                    },
+                                    "descricao": {
+                                        "type": "string",
+                                        "example": "Tecido cru 100% algodão"
+                                    },
+                                    "unidade": {
+                                        "type": "string",
+                                        "example": "m"
+                                    },
+                                    "quantidade": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 50
+                                    },
+                                    "estoqueMinimo": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 10
+                                    },
+                                    "largura": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 1.5
+                                    },
+                                    "comprimento": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 20
+                                    },
+                                    "gramatura": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 120
+                                    },
+                                    "cor": {
+                                        "type": "string",
+                                        "example": "Bege"
+                                    },
+                                    "marca": {
+                                        "type": "string",
+                                        "example": "TexFiber"
+                                    },
+                                    "localArmazenamento": {
+                                        "type": "string",
+                                        "example": "Estante A3 - Prateleira 2"
+                                    },
+                                    "codigoBarras": {
+                                        "type": "string",
+                                        "example": "7894561239874"
+                                    },
+                                    "precoUnitario": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 12.90
+                                    },
+                                    "fornecedor": {
+                                        "type": "string",
+                                        "example": "TexFiber Tecidos LTDA"
+                                    },
+                                    "dataUltimaEntrada": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2024-12-01"
+                                    },
+                                    "observacoes": {
+                                        "type": "string",
+                                        "example": "Repor antes do mês de novembro"
+                                    },
+                                    "idFornecedor_suprimentos": {
+                                        "type": "integer",
+                                        "example": 5
+                                    },
+                                    "idCliente": {
+                                        "type": "integer",
+                                        "example": 3,
+                                        "description": "ID do cliente que possui o Insumo Técnico"
+                                    }
+                                },
+                                "required": [
+                                    "nome",
+                                    "quantidade",
+                                    "unidade",
+                                    "idFornecedor_suprimentos"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Insumo Técnico cadastrada com sucesso."
+                    },
+                    "400": {
+                        "description": "Erro de validação"
+                    },
+                    "500": {
+                        "description": "Erro interno do servidor"
+                    }
+                }
+            }
+        },
+        "/estoqueInsumos/estoque_insumo/buscar": {
+            "post": {
+                "tags": [
+                    "Estoque Insumos Tecnicos"
+                ],
+                "summary": "Buscar itens de Insumo Técnico com filtros",
+                "description": "Retorna uma lista paginada de registros da tabela de Insumo Técnico com base em filtros opcionais.",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "idCliente": {
+                                        "type": "integer",
+                                        "example": 3,
+                                        "description": "ID do cliente que possui a Insumo Técnico"
+                                    },
+                                    "idFornecedor_suprimentos": {
+                                        "type": "integer",
+                                        "example": 7,
+                                        "description": "ID do fornecedor de suprimentos (chave estrangeira)"
+                                    },
+                                    "pagina": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "quantidadePorPagina": {
+                                        "type": "integer",
+                                        "example": 10
+                                    },
+                                    "nome": {
+                                        "type": "string",
+                                        "example": "Tecido Tricoline"
+                                    },
+                                    "tipo": {
+                                        "type": "string",
+                                        "example": "tecido"
+                                    },
+                                    "cor": {
+                                        "type": "string",
+                                        "example": "Azul Marinho"
+                                    },
+                                    "marca": {
+                                        "type": "string",
+                                        "example": "Têxtil Brasil"
+                                    },
+                                    "unidade": {
+                                        "type": "string",
+                                        "example": "m"
+                                    },
+                                    "localArmazenamento": {
+                                        "type": "string",
+                                        "example": "Prateleira 2A"
+                                    }
+                                },
+                                "required": [
+                                    "idFornecedor_suprimentos"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Consulta realizada com sucesso.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "mensagem": {
+                                            "type": "string",
+                                            "example": "Materiais encontrados com sucesso!"
+                                        },
+                                        "paginaAtual": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "quantidadePorPagina": {
+                                            "type": "integer",
+                                            "example": 10
+                                        },
+                                        "totalRegistros": {
+                                            "type": "integer",
+                                            "example": 25
+                                        },
+                                        "materiais": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": 1
+                                                    },
+                                                    "nome": {
+                                                        "type": "string",
+                                                        "example": "Tecido Tricoline Azul Marinho"
+                                                    },
+                                                    "tipo": {
+                                                        "type": "string",
+                                                        "example": "tecido"
+                                                    },
+                                                    "descricao": {
+                                                        "type": "string",
+                                                        "example": "Tecido leve ideal para patchwork e roupas leves."
+                                                    },
+                                                    "unidade": {
+                                                        "type": "string",
+                                                        "example": "m"
+                                                    },
+                                                    "quantidade": {
+                                                        "type": "number",
+                                                        "example": 120.5
+                                                    },
+                                                    "estoqueMinimo": {
+                                                        "type": "number",
+                                                        "example": 50.0
+                                                    },
+                                                    "largura": {
+                                                        "type": "number",
+                                                        "example": 150.0
+                                                    },
+                                                    "comprimento": {
+                                                        "type": "number",
+                                                        "example": null
+                                                    },
+                                                    "gramatura": {
+                                                        "type": "number",
+                                                        "example": 120.0
+                                                    },
+                                                    "cor": {
+                                                        "type": "string",
+                                                        "example": "Azul Marinho"
+                                                    },
+                                                    "marca": {
+                                                        "type": "string",
+                                                        "example": "Têxtil Brasil"
+                                                    },
+                                                    "localArmazenamento": {
+                                                        "type": "string",
+                                                        "example": "Prateleira 2A"
+                                                    },
+                                                    "codigoBarras": {
+                                                        "type": "string",
+                                                        "example": "7894561230123"
+                                                    },
+                                                    "precoUnitario": {
+                                                        "type": "number",
+                                                        "example": 12.9
+                                                    },
+                                                    "fornecedor": {
+                                                        "type": "string",
+                                                        "example": "Tecidos Sul LTDA"
+                                                    },
+                                                    "dataUltimaEntrada": {
+                                                        "type": "string",
+                                                        "format": "date",
+                                                        "example": "2025-06-10"
+                                                    },
+                                                    "observacoes": {
+                                                        "type": "string",
+                                                        "example": "Lote 205-B"
+                                                    },
+                                                    "criadoEm": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2025-06-13T19:51:22Z"
+                                                    },
+                                                    "atualizadoEm": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2025-06-13T19:51:22Z"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erro interno ao buscar dados de Insumo Técnico."
+                    }
+                }
+            }
+        },
+        "/estoqueInsumos/estoque_insumo/deletar/{id}": {
+            "delete": {
+                "tags": [
+                    "Estoque Insumos Tecnicos"
+                ],
+                "summary": "Excluir item de Insumo Técnico por ID",
+                "description": "Remove permanentemente um registro de Insumo Técnico do banco de dados com base no ID fornecido.",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "description": "ID do item de Insumo Técnico a ser excluído",
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Item excluído com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "mensagem": {
+                                            "type": "string",
+                                            "example": "Registro excluído com sucesso."
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "ID inválido para exclusão",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "mensagem": {
+                                            "type": "string",
+                                            "example": "ID inválido para exclusão."
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Registro não encontrado para exclusão",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "mensagem": {
+                                            "type": "string",
+                                            "example": "Registro não encontrado para exclusão."
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erro interno ao excluir registro",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "mensagem": {
+                                            "type": "string",
+                                            "example": "Erro ao excluir registro."
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Detalhes do erro interno"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/estoqueInsumos/estoque_insumo/editar/{id}": {
+            "put": {
+                "tags": [
+                    "Estoque Insumos Tecnicos"
+                ],
+                "summary": "Atualizar item de Insumo Técnico",
+                "description": "Atualiza os dados de um item de Insumo Técnico com base no ID fornecido.",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "description": "ID do item de Insumo Técnico a ser atualizado",
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "nome": {
+                                        "type": "string",
+                                        "example": "Tecido Tricoline Verde"
+                                    },
+                                    "tipo": {
+                                        "type": "string",
+                                        "example": "tecido"
+                                    },
+                                    "descricao": {
+                                        "type": "string",
+                                        "example": "Tecido para confecção leve"
+                                    },
+                                    "unidade": {
+                                        "type": "string",
+                                        "example": "m"
+                                    },
+                                    "quantidade": {
+                                        "type": "number",
+                                        "example": 75.0
+                                    },
+                                    "estoqueMinimo": {
+                                        "type": "number",
+                                        "example": 20.0
+                                    },
+                                    "largura": {
+                                        "type": "number",
+                                        "example": 140.0
+                                    },
+                                    "comprimento": {
+                                        "type": "number",
+                                        "example": null
+                                    },
+                                    "gramatura": {
+                                        "type": "number",
+                                        "example": 110.0
+                                    },
+                                    "cor": {
+                                        "type": "string",
+                                        "example": "Verde Bandeira"
+                                    },
+                                    "marca": {
+                                        "type": "string",
+                                        "example": "Têxtil Brasil"
+                                    },
+                                    "localArmazenamento": {
+                                        "type": "string",
+                                        "example": "Prateleira 1B"
+                                    },
+                                    "codigoBarras": {
+                                        "type": "string",
+                                        "example": "7894561230456"
+                                    },
+                                    "precoUnitario": {
+                                        "type": "number",
+                                        "example": 14.50
+                                    },
+                                    "fornecedor": {
+                                        "type": "string",
+                                        "example": "Tecidos Sul LTDA"
+                                    },
+                                    "dataUltimaEntrada": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2025-06-15"
+                                    },
+                                    "observacoes": {
+                                        "type": "string",
+                                        "example": "Remessa complementar"
+                                    },
+                                    "idFornecedor_suprimentos": {
+                                        "type": "integer",
+                                        "example": 7
+                                    }
+                                },
+                                "required": [
+                                    "nome",
+                                    "tipo",
+                                    "quantidade",
+                                    "unidade",
+                                    "idFornecedor_suprimentos"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Item atualizado com sucesso"
+                    },
+                    "400": {
+                        "description": "Erro de validação"
+                    },
+                    "404": {
+                        "description": "Registro não encontrado"
+                    },
+                    "500": {
+                        "description": "Erro interno do servidor"
+                    }
+                }
+            }
+        }, 
+
         "/produtoSupri/produtos_suprimentos": {
             "post": {
                 "tags": [
@@ -1744,6 +4016,70 @@
                     },
                     "404": {
                         "description": "Nenhum produto encontrado."
+                    },
+                    "500": {
+                        "description": "Erro interno do servidor."
+                    }
+                }
+            }
+        },
+        "/tipoProdutos/tipos_produto": {
+            "get": {
+                "tags": [
+                    "Categoria Produtos"
+                ],
+                "summary": "Lista os tipos de produtos por categoria",
+                "description": "Retorna uma lista de tipos de produtos filtrando pela categoria fornecida.",
+                "parameters": [
+                    {
+                        "name": "categoria",
+                        "in": "query",
+                        "description": "Categoria dos tipos de produto (ex: materia_prima, insumo)",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "materia_prima",
+                                "insumo"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista de tipos de produtos encontrada com sucesso.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "mensagem": {
+                                            "type": "string",
+                                            "example": "Tipos de produto encontrados com sucesso!"
+                                        },
+                                        "tipos": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": 1
+                                                    },
+                                                    "nome": {
+                                                        "type": "string",
+                                                        "example": "Tecido Algodão"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Parâmetro de categoria ausente ou inválido."
                     },
                     "500": {
                         "description": "Erro interno do servidor."

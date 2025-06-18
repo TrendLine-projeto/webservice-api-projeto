@@ -1,5 +1,14 @@
 import * as FornecedorProducaoModel from '../../models/fornecedorProducao';
 
+export const buscarFornecedorPorId = async (id: number) => {
+    const { fornecedoresResult } = await FornecedorProducaoModel.buscarFornecedorPorId(id);
+
+    return {
+        totalRegistros: fornecedoresResult.length,
+        fornecedor: fornecedoresResult[0] || null
+    };
+};
+
 export const criarFornecedor = async (fornecedor: any) => {
     if (!fornecedor.razaoSocial || !fornecedor.cnpj || !fornecedor.cliente_id) {
         throw { tipo: 'Validacao', mensagem: 'Razão Social, CNPJ e Cliente ID são obrigatórios.' };
@@ -79,4 +88,20 @@ export const buscarFornecedoresSimplesPorCliente = async ({ cliente_id }: { clie
 
     const fornecedores = await FornecedorProducaoModel.buscarFornecedoresSimplesPorCliente(cliente_id);
     return fornecedores;
+};
+
+export const deletarFornecedor = async (id: number): Promise<{ success: boolean; mensagem: string }> => {
+    const { sucesso, linhasAfetadas } = await FornecedorProducaoModel.deletarFornecedor(id);
+
+    if (!sucesso || linhasAfetadas === 0) {
+        return {
+            success: false,
+            mensagem: 'Fornecedor não encontrado ou já excluído.'
+        };
+    }
+
+    return {
+        success: true,
+        mensagem: 'Fornecedor excluído com sucesso!'
+    };
 };

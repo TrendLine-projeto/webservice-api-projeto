@@ -1,5 +1,5 @@
 import pool from '../connect/mysql';
-import { PoolConnection, RowDataPacket } from 'mysql2/promise';
+import { PoolConnection, RowDataPacket, ResultSetHeader } from 'mysql2/promise';
 import { FiltrosFornecedor } from '../types/fornecedores/FiltroForcenedorer';
 
 const construirWhereEParametros = (filtros: FiltrosFornecedor) => {
@@ -30,6 +30,24 @@ const construirWhereEParametros = (filtros: FiltrosFornecedor) => {
     return { where, params };
 };
 
+export const buscarFornecedorPorId = async (id: number): Promise<{ fornecedoresResult: RowDataPacket[] }> => {
+  const queryBusca = `
+    SELECT * FROM fornecedor_producao WHERE id = ?
+  `;
+
+  const conn: PoolConnection = await pool.getConnection();
+  try {
+    const [fornecedoresResult] = await conn.query(queryBusca, [id]);
+    return {
+      fornecedoresResult: fornecedoresResult as RowDataPacket[]
+    };
+  } catch (error) {
+    throw error;
+  } finally {
+    conn.release();
+  }
+};
+
 export const verificarClientePorId = async (cliente_id: number): Promise<boolean> => {
     const conn: PoolConnection = await pool.getConnection();
     try {
@@ -40,15 +58,62 @@ export const verificarClientePorId = async (cliente_id: number): Promise<boolean
     }
 };
 
-export const inserirFornecedor = async (fornecedor: any): Promise<any> => {
-    const conn: PoolConnection = await pool.getConnection();
-    try {
-        const sql = `INSERT INTO fornecedores_producao (razaoSocial, cnpj, cliente_id) VALUES (?, ?, ?)`;
-        const [result] = await conn.query(sql, [fornecedor.razaoSocial, fornecedor.cnpj, fornecedor.cliente_id]);
-        return result;
-    } finally {
-        conn.release();
-    }
+export const inserirFornecedor = async (fornecedor: any): Promise<ResultSetHeader> => {
+  const conn: PoolConnection = await pool.getConnection();
+  try {
+    const sql = `
+      INSERT INTO fornecedor_producao (
+        razaoSocial,
+        nomeFantasia,
+        cnpj,
+        inscricaoEstadual,
+        email,
+        telefone,
+        celular,
+        responsavel,
+        site,
+        tipoFornecedor,
+        categoria,
+        endereco,
+        bairro,
+        cidade,
+        estado,
+        cep,
+        pais,
+        observacoes,
+        ativo,
+        cliente_id
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+
+    const values = [
+      fornecedor.razaoSocial,
+      fornecedor.nomeFantasia,
+      fornecedor.cnpj,
+      fornecedor.inscricaoEstadual,
+      fornecedor.email,
+      fornecedor.telefone,
+      fornecedor.celular,
+      fornecedor.responsavel,
+      fornecedor.site,
+      fornecedor.tipoFornecedor,
+      fornecedor.categoria,
+      fornecedor.endereco,
+      fornecedor.bairro,
+      fornecedor.cidade,
+      fornecedor.estado,
+      fornecedor.cep,
+      fornecedor.pais,
+      fornecedor.observacoes,
+      fornecedor.ativo ? 1 : 0,
+      fornecedor.cliente_id
+    ];
+
+    const [result] = await conn.query<ResultSetHeader>(sql, values);
+    return result;
+  } finally {
+    conn.release();
+  }
 };
 
 export const buscarTotalDeFornecedores = async (filtros: FiltrosFornecedor): Promise<number> => {
@@ -106,4 +171,24 @@ export const buscarFornecedoresSimplesPorCliente = async (cliente_id: number): P
     } finally {
         conn.release();
     }
+};
+
+export const deletarFornecedor = async (
+  id: number
+): Promise<{ sucesso: boolean; linhasAfetadas: number }> => {
+  try {
+    const query = `DELETE FROM fornecedor_producao WHERE id = ?`;
+    const [result] = await pool.execute<ResultSetHeader>(query, [id]);
+
+    return {
+      sucesso: result.affectedRows > 0,
+      linhasAfetadas: result.affectedRows
+    };
+  } catch (error) {
+    console.error('Erro no Model deletarFornecedor:', error);
+    return {
+      sucesso: false,
+      linhasAfetadas: 0
+    };
+  }
 };
