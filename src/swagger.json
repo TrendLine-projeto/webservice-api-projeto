@@ -719,8 +719,8 @@
                 "tags": [
                     "Lotes"
                 ],
-                "summary": "Cadastrar uma nova entrada de lote com produtos",
-                "description": "Cria uma nova entrada de lote de produção, incluindo um array opcional de produtos vinculados ao lote.",
+                "summary": "Cadastrar uma nova entrada de lote com produtos e nota fiscal",
+                "description": "Cria uma nova entrada de lote de produção, incluindo um array opcional de produtos e uma nota fiscal vinculada ao lote.",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -755,6 +755,10 @@
                                         "example": true
                                     },
                                     "idFilial": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "idFornecedor_producao": {
                                         "type": "integer",
                                         "example": 1
                                     },
@@ -826,6 +830,69 @@
                                                 "quantidadeProduto"
                                             ]
                                         }
+                                    },
+                                    "notaFiscal": {
+                                        "type": "object",
+                                        "description": "Informações fiscais da nota vinculada ao lote",
+                                        "properties": {
+                                            "chaveAcesso": {
+                                                "type": "string",
+                                                "example": "12345678901234567890123456789012345678901234"
+                                            },
+                                            "numeroNota": {
+                                                "type": "string",
+                                                "example": "NF123456"
+                                            },
+                                            "serie": {
+                                                "type": "string",
+                                                "example": "001"
+                                            },
+                                            "dataEmissao": {
+                                                "type": "string",
+                                                "format": "date",
+                                                "example": "2024-06-10"
+                                            },
+                                            "valorProdutos": {
+                                                "type": "number",
+                                                "format": "float",
+                                                "example": 1000.00
+                                            },
+                                            "valorFrete": {
+                                                "type": "number",
+                                                "format": "float",
+                                                "example": 50.00
+                                            },
+                                            "valorICMS": {
+                                                "type": "number",
+                                                "format": "float",
+                                                "example": 180.00
+                                            },
+                                            "valorIPI": {
+                                                "type": "number",
+                                                "format": "float",
+                                                "example": 30.00
+                                            },
+                                            "transportadora": {
+                                                "type": "string",
+                                                "example": "Transportadora XYZ"
+                                            },
+                                            "qtdVolumes": {
+                                                "type": "integer",
+                                                "example": 10
+                                            },
+                                            "pesoBruto": {
+                                                "type": "number",
+                                                "format": "float",
+                                                "example": 250.5
+                                            }
+                                        },
+                                        "required": [
+                                            "chaveAcesso",
+                                            "numeroNota",
+                                            "serie",
+                                            "dataEmissao",
+                                            "valorProdutos"
+                                        ]
                                     }
                                 },
                                 "required": [
@@ -843,7 +910,7 @@
                 },
                 "responses": {
                     "201": {
-                        "description": "Lote e produtos criados com sucesso"
+                        "description": "Lote, produtos e nota fiscal criados com sucesso"
                     },
                     "400": {
                         "description": "Requisição inválida"
@@ -3058,7 +3125,6 @@
                 }
             }
         },
-
         "/estoqueInsumos/estoque_insumo/{id}": {
             "get": {
                 "tags": [
@@ -3799,8 +3865,7 @@
                     }
                 }
             }
-        }, 
-
+        },
         "/produtoSupri/produtos_suprimentos": {
             "post": {
                 "tags": [
@@ -4083,6 +4148,154 @@
                     },
                     "500": {
                         "description": "Erro interno do servidor."
+                    }
+                }
+            }
+        },
+        "/tipoProdutos/conferencia": {
+            "post": {
+                "tags": [
+                    "Categoria Produtos"
+                ],
+                "summary": "Buscar produtos para conferência de estoque com paginação, 1 = Insumos, 2 = materia prima",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "tabela": {
+                                        "type": "string",
+                                        "enum": [
+                                            "insumo",
+                                            "materiaprima"
+                                        ]
+                                    },
+                                    "idCliente": {
+                                        "type": "integer"
+                                    },
+                                    "pagina": {
+                                        "type": "integer"
+                                    },
+                                    "quantidadePorPagina": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "required": [
+                                    "tabela",
+                                    "idCliente",
+                                    "pagina",
+                                    "quantidadePorPagina"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Dados paginados com produtos para conferência",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "pagina": {
+                                            "type": "integer"
+                                        },
+                                        "paginasTotais": {
+                                            "type": "integer"
+                                        },
+                                        "totalRegistros": {
+                                            "type": "integer"
+                                        },
+                                        "dados": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer"
+                                                    },
+                                                    "nome": {
+                                                        "type": "string"
+                                                    },
+                                                    "unidade": {
+                                                        "type": "string"
+                                                    },
+                                                    "quantidade": {
+                                                        "type": "number"
+                                                    },
+                                                    "estoqueMinimo": {
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Erro de validação ou parâmetros ausentes"
+                    },
+                    "500": {
+                        "description": "Erro interno ao buscar dados de conferência"
+                    }
+                }
+            }
+        },
+        "/tipoProdutos/conferencia/salvar": {
+            "post": {
+                "summary": "Registrar conferência de estoque",
+                "tags": [
+                    "Categoria Produtos"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "id_produto": {
+                                        "type": "integer"
+                                    },
+                                    "quantidade_sistema": {
+                                        "type": "number"
+                                    },
+                                    "quantidade_conferida": {
+                                        "type": "number"
+                                    },
+                                    "tabela_origem": {
+                                        "type": "integer",
+                                        "enum": [
+                                            1,
+                                            2
+                                        ]
+                                    },
+                                    "id_cliente": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "required": [
+                                    "id_produto",
+                                    "quantidade_sistema",
+                                    "quantidade_conferida",
+                                    "tabela_origem",
+                                    "id_cliente"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Conferência registrada com sucesso"
+                    },
+                    "400": {
+                        "description": "Erro nos dados enviados"
                     }
                 }
             }

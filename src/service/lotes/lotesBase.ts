@@ -1,24 +1,42 @@
-import * as lotesModel  from '../../models/lotes';
+import * as lotesModel from '../../models/lotes';
 import { EntradaDeLote } from '../../types/lotes/EntradaDeLote';
+import { NotaFiscal } from '../../types/notasFiscais/notaFiscal';
+import * as notasFiscais from '../../models/notaFiscal';
 
-export const criarLote = async (entradaDeLote: EntradaDeLote) => {
-    const filialExiste = await lotesModel.verificarFilialPorId(entradaDeLote.idFilial);
+export const criarLote = async (
+  entradaDeLote: EntradaDeLote,
+  notaFiscal?: NotaFiscal
+) => {
+  const filialExiste = await lotesModel.verificarFilialPorId(entradaDeLote.idFilial);
 
-    if (!filialExiste) {
-        throw { tipo: 'FilialNaoEncontrada', mensagem: 'Filial não encontrada. Verifique o ID informado.' };
-    }
-
-    const resultadoLote = await lotesModel.inserirLote(entradaDeLote);
-    const idLoteCriado = resultadoLote.insertId;
-
-    if (entradaDeLote.produtos && entradaDeLote.produtos.length > 0) {
-        await lotesModel.inserirProdutosNoLote(idLoteCriado, entradaDeLote.produtos);
-    }
-
-    return {
-        id: idLoteCriado,
-        ...entradaDeLote
+  if (!filialExiste) {
+    throw {
+      tipo: 'FilialNaoEncontrada',
+      mensagem: 'Filial não encontrada. Verifique o ID informado.'
     };
+  }
+
+  const resultadoLote = await lotesModel.inserirLote(entradaDeLote);
+  const idLoteCriado = resultadoLote.insertId;
+
+  if (entradaDeLote.produtos && entradaDeLote.produtos.length > 0) {
+    await lotesModel.inserirProdutosNoLote(idLoteCriado, entradaDeLote.produtos);
+  }
+
+  if (notaFiscal) {
+    try {
+      await notasFiscais.inserirNotaFiscal(notaFiscal, idLoteCriado);
+    } catch (erroNota) {
+      console.error("Erro ao inserir nota fiscal:", erroNota);
+    }
+  } else {
+    console.warn("Nenhuma nota fiscal fornecida para este lote.");
+  }
+
+  return {
+    id: idLoteCriado,
+    ...entradaDeLote
+  };
 };
 
 export const buscarLotesPorCliente = async (filtros: any) => {

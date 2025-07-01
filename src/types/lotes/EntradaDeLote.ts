@@ -11,5 +11,6 @@ export interface EntradaDeLote {
   dataPrevistaSaida?: string;
   loteIniciado: boolean;
   idFilial: number;
+  idFornecedor_producao: number;
   produtos?: ProdutoProducao[];
 }

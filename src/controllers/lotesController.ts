@@ -1,30 +1,34 @@
 import { Request, Response } from 'express';
 import * as lotesService from '../service/lotes/lotesBase';
 import { EntradaDeLote } from '../types/lotes/EntradaDeLote';
+import { NotaFiscal } from '../types/notasFiscais/notaFiscal';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
-export const criarLote = async (req: Request<{}, {}, EntradaDeLote>, res: Response) => {
-    const entradaDeLote = req.body;
+export const criarLote = async (
+  req: Request<{}, {}, EntradaDeLote & { notaFiscal?: NotaFiscal }>,
+  res: Response
+) => {
+  const { notaFiscal, ...entradaDeLote } = req.body;
 
-    if (!entradaDeLote.idFilial) {
-        return res.status(400).send({ mensagem: 'Identificação da filial é obrigatória' });
+  if (!entradaDeLote.idFilial) {
+    return res.status(400).send({ mensagem: 'Identificação da filial é obrigatória' });
+  }
+
+  try {
+    const loteCriado = await lotesService.criarLote(entradaDeLote, notaFiscal);
+
+    return res.status(201).send({
+      mensagem: 'Entrada de lote criada com sucesso!',
+      loteCadastrado: loteCriado
+    });
+  } catch (error: any) {
+    if (error.tipo === 'FilialNaoEncontrada') {
+      return res.status(404).send({ mensagem: error.mensagem });
     }
-
-    try {
-        const loteCriado = await lotesService.criarLote(entradaDeLote);
-
-        return res.status(201).send({
-            mensagem: 'Entrada de lote criada com sucesso!',
-            loteCadastrado: loteCriado
-        });
-    } catch (error: any) {
-        if (error.tipo === 'FilialNaoEncontrada') {
-            return res.status(404).send({ mensagem: error.mensagem });
-        }
-        return res.status(500).send({ erro: error });
-    }
+    return res.status(500).send({ erro: error.message || error });
+  }
 };
 
 export const buscarLotesPorCliente = async (req: Request, res: Response) => {

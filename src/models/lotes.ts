@@ -27,8 +27,9 @@ export const inserirLote = async (entradaDeLote: EntradaDeLote): Promise<ResultS
                 dataEntrada,
                 dataPrevistaSaida,
                 loteIniciado,
-                idFilial
-            ) VALUES (?, ?, ?, ?, ?, NOW(), NOW(), ?, ?)
+                idFilial,
+                idFornecedor_producao
+            ) VALUES (?, ?, ?, ?, ?, NOW(), NOW(), ?, ?, ?)
         `;
 
     const valores = [
@@ -38,7 +39,8 @@ export const inserirLote = async (entradaDeLote: EntradaDeLote): Promise<ResultS
       entradaDeLote.valorEstimado,
       entradaDeLote.valorHoraEstimado,
       entradaDeLote.loteIniciado,
-      entradaDeLote.idFilial
+      entradaDeLote.idFilial,
+      entradaDeLote.idFornecedor_producao
     ];
 
     const [result] = await conn.query<ResultSetHeader>(query, valores);
