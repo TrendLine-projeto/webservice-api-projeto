@@ -31,7 +31,7 @@ export const criarLote = async (
   }
 };
 
-export const buscarLotesPorCliente = async (req: Request, res: Response) => {
+export const buscarLotesComFiltro = async (req: Request, res: Response) => {
   try {
     const filtros = req.body;
 
@@ -82,8 +82,8 @@ export const buscarLotePorId = async (req: Request, res: Response) => {
   const idLote = parseInt(req.params.id, 10);
 
   try {
-    const lote = await lotesService.buscarLotePorId(idLote);
-    return res.status(200).send({ lote });
+    const loteCompleto = await lotesService.buscarLotePorId(idLote);
+    return res.status(200).send({ lote: loteCompleto });
   } catch (error: any) {
     const status = error.status || 500;
     return res.status(status).send({ mensagem: error.mensagem || 'Erro interno no servidor' });

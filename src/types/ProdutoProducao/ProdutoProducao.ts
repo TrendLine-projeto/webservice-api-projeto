@@ -8,6 +8,7 @@ export interface ProdutoProducao {
     corSecundaria?: string;
     valorPorPeca: number;
     quantidadeProduto: number;
+    someValorTotalProduto: number;
     dataEntrada?: string;
     dataPrevistaSaida?: string;
     dataSaida?: string;

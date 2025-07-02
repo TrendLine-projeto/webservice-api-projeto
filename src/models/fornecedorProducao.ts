@@ -192,3 +192,28 @@ export const deletarFornecedor = async (
     };
   }
 };
+
+export const buscarFornecedoresPorIds = async (ids: number[]) => {
+  if (!ids.length) return {};
+
+  const placeholders = ids.map(() => '?').join(',');
+  const query = `
+    SELECT * FROM fornecedor_producao
+    WHERE id IN (${placeholders})
+  `;
+
+  const conn: PoolConnection = await pool.getConnection();
+  try {
+    const [result] = await conn.query<RowDataPacket[]>(query, ids);
+    const fornecedores = result;
+
+    const porId: Record<number, any> = {};
+    for (const f of fornecedores) {
+      porId[f.id] = f;
+    }
+
+    return porId;
+  } finally {
+    conn.release();
+  }
+};

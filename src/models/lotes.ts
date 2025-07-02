@@ -1,5 +1,5 @@
 import pool from '../connect/mysql';
-import { PoolConnection, ResultSetHeader } from 'mysql2/promise';
+import { PoolConnection, ResultSetHeader, RowDataPacket  } from 'mysql2/promise';
 import { EntradaDeLote } from '../types/lotes/EntradaDeLote';
 import { ProdutoProducao } from '../types/lotes/ProdutoProducao';
 
@@ -61,7 +61,8 @@ export const buscarLotesPorCliente = async (filtros: any) => {
     valorEstimado,
     dataEntrada,
     dataPrevistaSaida,
-    loteIniciado
+    loteIniciado,
+    loteFinalizado
   } = filtros;
 
   const offset = (pagina - 1) * quantidadePorPagina;
@@ -97,10 +98,14 @@ export const buscarLotesPorCliente = async (filtros: any) => {
     where += ' AND loteIniciado = ?';
     params.push(loteIniciado);
   }
+  if (loteFinalizado !== null && loteFinalizado !== undefined) {
+    where += ' AND loteFinalizado = ?';
+    params.push(loteFinalizado);
+  }
 
   const queryBusca = `
     SELECT 
-        id, numeroIdentificador, nomeEntregador, nomeRecebedor, valorEstimado, valorHoraEstimado, dataEntrada, dataPrevistaSaida, loteIniciado, idFilial
+        id, numeroIdentificador, nomeEntregador, nomeRecebedor, valorEstimado, valorHoraEstimado, dataEntrada, dataPrevistaSaida, loteIniciado, idFilial, idFornecedor_producao
     FROM entrada_lotes
     ${where}
     ORDER BY id DESC
@@ -115,10 +120,11 @@ export const buscarLotesPorCliente = async (filtros: any) => {
   const conn: PoolConnection = await pool.getConnection();
 
   try {
-    const [totalResult] = await conn.query(queryTotal, params);
-    const [lotes] = await conn.query(queryBusca, [...params, quantidadePorPagina, offset]);
+    const [totalResult] = await conn.query<RowDataPacket[]>(queryTotal, params);
+    const [lotes] = await conn.query<RowDataPacket[]>(queryBusca, [...params, quantidadePorPagina, offset]);
+
     return {
-      totalRegistros: (totalResult as any[])[0].total,
+      totalRegistros: totalResult[0].total,
       lotes
     };
   } finally {
@@ -133,7 +139,7 @@ export const inserirProdutosNoLote = async (idLote: number, produtos: any[]) => 
     const query = `
             INSERT INTO produtos_producao (
                 numeroIdentificador, nomeProduto, tipoEstilo, tamanho, corPrimaria, corSecundaria,
-                valorPorPeca, quantidadeProduto, dataEntrada, dataPrevistaSaida, dataSaida,
+                valorPorPeca, quantidadeProduto, someValorTotalProduto, dataEntrada, dataPrevistaSaida, dataSaida,
                 imagem, finalizado, idEntrada_lotes, idFilial
             ) VALUES ?
         `;
@@ -147,6 +153,7 @@ export const inserirProdutosNoLote = async (idLote: number, produtos: any[]) => 
       produto.corSecundaria,
       produto.valorPorPeca,
       produto.quantidadeProduto,
+      produto.someValorTotalProduto,
       new Date(), // dataEntrada
       produto.dataPrevistaSaida || null,
       produto.dataSaida || null,

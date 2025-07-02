@@ -1,5 +1,5 @@
 import pool from '../connect/mysql';
-import { PoolConnection, ResultSetHeader } from 'mysql2/promise';
+import { PoolConnection, ResultSetHeader, RowDataPacket } from 'mysql2/promise';
 import { NotaFiscal } from '../types/notasFiscais/notaFiscal';
 
 export const inserirNotaFiscal = async (
@@ -33,6 +33,35 @@ export const inserirNotaFiscal = async (
     ];
 
     await conn.query<ResultSetHeader>(query, values);
+  } finally {
+    conn.release();
+  }
+};
+
+export const buscarNotasPorLoteIds = async (loteIds: number[]) => {
+  if (!loteIds.length) return {};
+
+  const placeholders = loteIds.map(() => '?').join(',');
+
+  const query = `
+    SELECT * FROM notas_fiscais
+    WHERE lote_id IN (${placeholders})
+  `;
+
+  const conn: PoolConnection = await pool.getConnection();
+  try {
+    const [result] = await conn.query<RowDataPacket[]>(query, loteIds);
+    const notas = result;
+
+    const notasPorLote: Record<number, any[]> = {};
+    for (const nf of notas) {
+      if (!notasPorLote[nf.lote_id]) {
+        notasPorLote[nf.lote_id] = [];
+      }
+      notasPorLote[nf.lote_id].push(nf);
+    }
+
+    return notasPorLote;
   } finally {
     conn.release();
   }

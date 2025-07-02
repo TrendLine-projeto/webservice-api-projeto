@@ -1,4 +1,7 @@
 import * as lotesModel from '../../models/lotes';
+import * as notaModel from '../../models/notaFiscal';
+import * as produtoModel from '../../models/produtosProducao';
+import * as fornecedorModel from '../../models/fornecedorProducao'
 import { EntradaDeLote } from '../../types/lotes/EntradaDeLote';
 import { NotaFiscal } from '../../types/notasFiscais/notaFiscal';
 import * as notasFiscais from '../../models/notaFiscal';
@@ -44,7 +47,26 @@ export const buscarLotesPorCliente = async (filtros: any) => {
     throw { status: 400, mensagem: 'Filial ID é obrigatório.' };
   }
 
-  return await lotesModel.buscarLotesPorCliente(filtros);
+  const resultado = await lotesModel.buscarLotesPorCliente(filtros);
+
+  const loteIds = resultado.lotes.map((l: any) => l.id);
+  const fornecedorIds = [...new Set(resultado.lotes.map((l: any) => l.idFornecedor_producao).filter(Boolean))];
+
+  const notasPorLote = await notaModel.buscarNotasPorLoteIds(loteIds);
+  const produtosPorLote = await produtoModel.buscarProdutosPorLoteIds(loteIds);
+  const fornecedoresPorId = await fornecedorModel.buscarFornecedoresPorIds(fornecedorIds);
+
+  const lotesComDados = resultado.lotes.map((lote: any) => ({
+    ...lote,
+    fornecedor: fornecedoresPorId[lote.idFornecedor_producao] || null,
+    notasFiscais: notasPorLote[lote.id] || [],
+    produtos: produtosPorLote[lote.id] || []
+  }));
+
+  return {
+    totalRegistros: resultado.totalRegistros,
+    lotes: lotesComDados
+  };
 };
 
 export const encerrarLote = async (idLote: number) => {
@@ -80,7 +102,19 @@ export const buscarLotePorId = async (idLote: number) => {
     throw { status: 404, mensagem: 'Lote não encontrado' };
   }
 
-  return lote;
+  // Buscar dados relacionados
+  const [notas, produtos, fornecedor] = await Promise.all([
+    notaModel.buscarNotasPorLoteIds([lote.id]),
+    produtoModel.buscarProdutosPorLoteIds([lote.id]),
+    fornecedorModel.buscarFornecedoresPorIds([lote.idFornecedor_producao])
+  ]);
+
+  return {
+    ...lote,
+    notasFiscais: notas[lote.id] || [],
+    produtos: produtos[lote.id] || [],
+    fornecedor: fornecedor[lote.idFornecedor_producao] || null
+  };
 };
 
 export const deletarLoteComProdutos = async (idLote: number) => {

@@ -1,5 +1,5 @@
 import pool from '../connect/mysql';
-import { PoolConnection, RowDataPacket} from 'mysql2/promise';
+import { PoolConnection, RowDataPacket } from 'mysql2/promise';
 import { EntradaDeLote } from '../types/lotes/EntradaDeLote';
 import { ProdutoProducao } from '../types/ProdutoProducao/ProdutoProducao';
 
@@ -26,6 +26,7 @@ export const inserirProduto = async (produto: ProdutoProducao): Promise<any> => 
                 corSecundaria,
                 valorPorPeca,
                 quantidadeProduto,
+                someValorTotalProduto,
                 dataEntrada,
                 dataPrevistaSaida,
                 dataSaida,
@@ -33,7 +34,7 @@ export const inserirProduto = async (produto: ProdutoProducao): Promise<any> => 
                 finalizado,
                 idEntrada_lotes,
                 idFilial
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?, ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?, ?, ?)
         `;
 
     const valores = [
@@ -45,6 +46,7 @@ export const inserirProduto = async (produto: ProdutoProducao): Promise<any> => 
       produto.corSecundaria,
       produto.valorPorPeca,
       produto.quantidadeProduto,
+      produto.someValorTotalProduto,
       produto.dataPrevistaSaida,
       produto.dataSaida,
       produto.imagem,
@@ -240,6 +242,34 @@ export const deletarPorId = async (idProduto: number): Promise<void> => {
     } finally {
         conn.release();
     }
+};
+
+export const buscarProdutosPorLoteIds = async (loteIds: number[]) => {
+  if (!loteIds.length) return {};
+
+  const placeholders = loteIds.map(() => '?').join(',');
+  const query = `
+    SELECT * FROM produtos_producao
+    WHERE idEntrada_lotes IN (${placeholders})
+  `;
+
+  const conn: PoolConnection = await pool.getConnection();
+  try {
+    const [result] = await conn.query<RowDataPacket[]>(query, loteIds);
+    const produtos = result;
+
+    const produtosPorLote: Record<number, any[]> = {};
+    for (const p of produtos) {
+      if (!produtosPorLote[p.idEntrada_lotes]) {
+        produtosPorLote[p.idEntrada_lotes] = [];
+      }
+      produtosPorLote[p.idEntrada_lotes].push(p);
+    }
+
+    return produtosPorLote;
+  } finally {
+    conn.release();
+  }
 };
 
 /*export const inserirProdutosNoLote = async (idLote: number, produtos: ProdutoProducao[]) => {

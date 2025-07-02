@@ -359,6 +359,10 @@
                                         "type": "integer",
                                         "example": 100
                                     },
+                                    "someValorTotalProduto": {
+                                        "type": "integer",
+                                        "example": 100
+                                    },
                                     "dataEntrada": {
                                         "type": "string",
                                         "format": "date",
@@ -927,7 +931,7 @@
                     "Lotes"
                 ],
                 "summary": "Buscar lotes com filtros e paginação",
-                "description": "Busca registros de lotes com suporte a filtros dinâmicos e paginação.",
+                "description": "Busca registros de lotes com suporte a filtros dinâmicos e paginação. Retorna também notas fiscais, produtos e dados do fornecedor.",
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -994,7 +998,38 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Lotes encontrados com sucesso."
+                        "description": "Lotes encontrados com sucesso.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "mensagem": {
+                                            "type": "string",
+                                            "example": "Lotes encontrados com sucesso!"
+                                        },
+                                        "paginaAtual": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "quantidadePorPagina": {
+                                            "type": "integer",
+                                            "example": 10
+                                        },
+                                        "totalRegistros": {
+                                            "type": "integer",
+                                            "example": 7
+                                        },
+                                        "lotes": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/LoteCompleto"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     },
                     "400": {
                         "description": "ID da filial não informado."
@@ -1004,6 +1039,301 @@
                     },
                     "500": {
                         "description": "Erro interno do servidor."
+                    }
+                }
+            }
+        },
+        "components": {
+            "schemas": {
+                "LoteCompleto": {
+                    "type": "object",
+                    "properties": {
+                        "id": {
+                            "type": "integer",
+                            "example": 16
+                        },
+                        "numeroIdentificador": {
+                            "type": "string",
+                            "example": "L12345"
+                        },
+                        "nomeEntregador": {
+                            "type": "string",
+                            "example": "João da Silva"
+                        },
+                        "nomeRecebedor": {
+                            "type": "string",
+                            "example": "Maria Oliveira"
+                        },
+                        "valorEstimado": {
+                            "type": "string",
+                            "example": "0.00"
+                        },
+                        "valorHoraEstimado": {
+                            "type": "string",
+                            "example": "0.00"
+                        },
+                        "dataEntrada": {
+                            "type": "string",
+                            "format": "date-time",
+                            "example": "2025-06-27T21:31:56.000Z"
+                        },
+                        "dataPrevistaSaida": {
+                            "type": "string",
+                            "format": "date-time",
+                            "example": "2025-06-27T21:31:56.000Z"
+                        },
+                        "loteIniciado": {
+                            "type": "boolean",
+                            "example": true
+                        },
+                        "idFilial": {
+                            "type": "integer",
+                            "example": 1
+                        },
+                        "idFornecedor_producao": {
+                            "type": "integer",
+                            "example": 9
+                        },
+                        "fornecedor": {
+                            "$ref": "#/components/schemas/FornecedorProducao"
+                        },
+                        "notasFiscais": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/components/schemas/NotaFiscal"
+                            }
+                        },
+                        "produtos": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/components/schemas/ProdutoProducao"
+                            }
+                        }
+                    }
+                },
+                "NotaFiscal": {
+                    "type": "object",
+                    "properties": {
+                        "id": {
+                            "type": "integer",
+                            "example": 1
+                        },
+                        "chaveAcesso": {
+                            "type": "string",
+                            "example": "412123124124123"
+                        },
+                        "numeroNota": {
+                            "type": "string",
+                            "example": "43573323"
+                        },
+                        "serie": {
+                            "type": "string",
+                            "example": "12331"
+                        },
+                        "dataEmissao": {
+                            "type": "string",
+                            "format": "date-time",
+                            "example": "2025-06-27T00:00:00.000Z"
+                        },
+                        "valorProdutos": {
+                            "type": "string",
+                            "example": "12.00"
+                        },
+                        "valorFrete": {
+                            "type": "string",
+                            "example": "12.00"
+                        },
+                        "valorICMS": {
+                            "type": "string",
+                            "example": "12.00"
+                        },
+                        "valorIPI": {
+                            "type": "string",
+                            "example": "12.00"
+                        },
+                        "transportadora": {
+                            "type": "string",
+                            "example": "Transportadora XYZ"
+                        },
+                        "qtdVolumes": {
+                            "type": "string",
+                            "example": "200"
+                        },
+                        "pesoBruto": {
+                            "type": "string",
+                            "example": "12"
+                        },
+                        "lote_id": {
+                            "type": "integer",
+                            "example": 16
+                        }
+                    }
+                },
+                "ProdutoProducao": {
+                    "type": "object",
+                    "properties": {
+                        "id": {
+                            "type": "integer",
+                            "example": 1
+                        },
+                        "numeroIdentificador": {
+                            "type": "string",
+                            "example": "PROD-TGV66G"
+                        },
+                        "nomeProduto": {
+                            "type": "string",
+                            "example": "Camiseta Polo"
+                        },
+                        "tipoEstilo": {
+                            "type": "string",
+                            "example": "Casual"
+                        },
+                        "tamanho": {
+                            "type": "string",
+                            "example": "M"
+                        },
+                        "corPrimaria": {
+                            "type": "string",
+                            "example": "Azul"
+                        },
+                        "corSecundaria": {
+                            "type": "string",
+                            "example": "Branco"
+                        },
+                        "valorPorPeca": {
+                            "type": "string",
+                            "example": "39.90"
+                        },
+                        "quantidadeProduto": {
+                            "type": "string",
+                            "example": "100"
+                        },
+                        "dataEntrada": {
+                            "type": "string",
+                            "format": "date-time",
+                            "example": "2024-05-20T00:00:00"
+                        },
+                        "dataPrevistaSaida": {
+                            "type": "string",
+                            "format": "date-time",
+                            "example": "2024-05-30T00:00:00"
+                        },
+                        "dataSaida": {
+                            "type": "string",
+                            "format": "date-time",
+                            "nullable": true
+                        },
+                        "imagem": {
+                            "type": "string",
+                            "format": "uri",
+                            "example": "https://meuarquivo.com/imagem.jpg"
+                        },
+                        "finalizado": {
+                            "type": "boolean",
+                            "example": true
+                        },
+                        "idEntrada_lotes": {
+                            "type": "integer",
+                            "example": 16
+                        },
+                        "idFilial": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                },
+                "FornecedorProducao": {
+                    "type": "object",
+                    "properties": {
+                        "id": {
+                            "type": "integer",
+                            "example": 9
+                        },
+                        "razaoSocial": {
+                            "type": "string",
+                            "example": "Gatabakana"
+                        },
+                        "nomeFantasia": {
+                            "type": "string",
+                            "example": "Gatabakana"
+                        },
+                        "cnpj": {
+                            "type": "string",
+                            "example": "86.830.056/0001-99"
+                        },
+                        "inscricaoEstadual": {
+                            "type": "string",
+                            "example": "3112312"
+                        },
+                        "email": {
+                            "type": "string",
+                            "example": "isaque.lopes047@gmail.com"
+                        },
+                        "telefone": {
+                            "type": "string",
+                            "example": "47999078865"
+                        },
+                        "celular": {
+                            "type": "string",
+                            "example": "(47) 99255-6556"
+                        },
+                        "responsavel": {
+                            "type": "string",
+                            "example": "Odair Ribeiro"
+                        },
+                        "site": {
+                            "type": "string",
+                            "example": "www.angelira.com.br"
+                        },
+                        "tipoFornecedor": {
+                            "type": "string",
+                            "example": "Nacional"
+                        },
+                        "categoria": {
+                            "type": "string",
+                            "example": "Tecidos"
+                        },
+                        "endereco": {
+                            "type": "string",
+                            "example": "Alberto Linhares"
+                        },
+                        "bairro": {
+                            "type": "string",
+                            "example": "Centro"
+                        },
+                        "cidade": {
+                            "type": "string",
+                            "example": "Barra Velha"
+                        },
+                        "estado": {
+                            "type": "string",
+                            "example": "SC"
+                        },
+                        "cep": {
+                            "type": "string",
+                            "example": "88390000"
+                        },
+                        "pais": {
+                            "type": "string",
+                            "example": "Brasil"
+                        },
+                        "observacoes": {
+                            "type": "string",
+                            "example": "Fornecedor homologado."
+                        },
+                        "ativo": {
+                            "type": "boolean",
+                            "example": true
+                        },
+                        "dataCadastro": {
+                            "type": "string",
+                            "format": "date-time",
+                            "example": "2025-06-17T17:22:14"
+                        },
+                        "cliente_id": {
+                            "type": "integer",
+                            "example": 1
+                        }
                     }
                 }
             }
