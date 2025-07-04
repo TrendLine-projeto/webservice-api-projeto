@@ -1082,7 +1082,19 @@
                             "format": "date-time",
                             "example": "2025-06-27T21:31:56.000Z"
                         },
+                        "dataInicio": {
+                            "type": "boolean",
+                            "example": true
+                        },
+                        "dataSaida": {
+                            "type": "boolean",
+                            "example": true
+                        },
                         "loteIniciado": {
+                            "type": "boolean",
+                            "example": true
+                        },
+                        "loteFinalizado": {
                             "type": "boolean",
                             "example": true
                         },

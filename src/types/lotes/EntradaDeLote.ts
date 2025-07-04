@@ -9,7 +9,10 @@ export interface EntradaDeLote {
   valorHoraEstimado: number;
   dataEntrada?: string;
   dataPrevistaSaida?: string;
+  dataInicio?: string;
+  dataSaida?: string;
   loteIniciado: boolean;
+  loteFinalizado: boolean;
   idFilial: number;
   idFornecedor_producao: number;
   produtos?: ProdutoProducao[];

@@ -1,5 +1,5 @@
 import pool from '../connect/mysql';
-import { PoolConnection, ResultSetHeader, RowDataPacket  } from 'mysql2/promise';
+import { PoolConnection, ResultSetHeader, RowDataPacket } from 'mysql2/promise';
 import { EntradaDeLote } from '../types/lotes/EntradaDeLote';
 import { ProdutoProducao } from '../types/lotes/ProdutoProducao';
 
@@ -18,19 +18,22 @@ export const inserirLote = async (entradaDeLote: EntradaDeLote): Promise<ResultS
 
   try {
     const query = `
-            INSERT INTO entrada_lotes (
-                numeroIdentificador,
-                nomeEntregador,
-                nomeRecebedor,
-                valorEstimado,
-                valorHoraEstimado,
-                dataEntrada,
-                dataPrevistaSaida,
-                loteIniciado,
-                idFilial,
-                idFornecedor_producao
-            ) VALUES (?, ?, ?, ?, ?, NOW(), NOW(), ?, ?, ?)
-        `;
+      INSERT INTO entrada_lotes (
+        numeroIdentificador,
+        nomeEntregador,
+        nomeRecebedor,
+        valorEstimado,
+        valorHoraEstimado,
+        dataEntrada,
+        dataPrevistaSaida,
+        dataInicio,
+        loteIniciado,
+        idFilial,
+        idFornecedor_producao
+      ) VALUES (?, ?, ?, ?, ?, NOW(), NOW(), ?, ?, ?, ?)
+    `;
+
+    const dataInicio = entradaDeLote.loteIniciado ? new Date() : null;
 
     const valores = [
       entradaDeLote.numeroIdentificador,
@@ -38,6 +41,7 @@ export const inserirLote = async (entradaDeLote: EntradaDeLote): Promise<ResultS
       entradaDeLote.nomeRecebedor,
       entradaDeLote.valorEstimado,
       entradaDeLote.valorHoraEstimado,
+      dataInicio,
       entradaDeLote.loteIniciado,
       entradaDeLote.idFilial,
       entradaDeLote.idFornecedor_producao
@@ -105,7 +109,7 @@ export const buscarLotesPorCliente = async (filtros: any) => {
 
   const queryBusca = `
     SELECT 
-        id, numeroIdentificador, nomeEntregador, nomeRecebedor, valorEstimado, valorHoraEstimado, dataEntrada, dataPrevistaSaida, loteIniciado, idFilial, idFornecedor_producao
+        id, numeroIdentificador, nomeEntregador, nomeRecebedor, valorEstimado, valorHoraEstimado, dataEntrada, dataPrevistaSaida, dataInicio, dataSaida, loteIniciado, loteFinalizado, idFilial, idFornecedor_producao
     FROM entrada_lotes
     ${where}
     ORDER BY id DESC
