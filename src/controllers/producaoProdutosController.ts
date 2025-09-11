@@ -70,6 +70,43 @@ export const buscarProdutoPorId = async (req: Request, res: Response) => {
     }
 };
 
+export const atualizarProdutoPorId = async (req: Request, res: Response) => {
+  const idParam = parseInt(req.params.id, 10);
+  if (isNaN(idParam)) {
+    return res.status(400).send({ mensagem: 'ID da URL inválido' });
+  }
+
+  const rawBody = (req.body && req.body.produtoProducao) ? req.body.produtoProducao : req.body || {};
+
+  if (typeof rawBody.id === 'undefined') {
+    return res.status(400).send({ mensagem: 'Body deve conter o campo id' });
+  }
+
+  const idBody = parseInt(String(rawBody.id), 10);
+  if (isNaN(idBody)) {
+    return res.status(400).send({ mensagem: 'ID do body inválido' });
+  }
+  if (idBody !== idParam) {
+    return res.status(400).send({ mensagem: 'ID da URL e ID do body não conferem' });
+  }
+
+  try {
+    const atualizado = await produtosProducaoService.atualizarProdutoPorId(idBody, rawBody);
+    if (!atualizado) {
+      return res.status(404).send({ mensagem: 'Produto não encontrado para atualização' });
+    }
+    return res.status(200).send({
+      mensagem: 'Produto atualizado com sucesso',
+      produtoProducao: atualizado,
+    });
+  } catch (error: any) {
+    if (error?.tipo === 'Validacao') {
+      return res.status(400).send({ mensagem: error.mensagem });
+    }
+    return res.status(500).send({ erro: error });
+  }
+};
+
 export const deletarPorId = async (req: Request, res: Response) => {
     const id = parseInt(req.params.id, 10);
 

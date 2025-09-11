@@ -386,6 +386,66 @@
                                         "type": "integer",
                                         "example": 0
                                     },
+                                    "marca": {
+                                        "type": "string",
+                                        "example": "Sunny Aura"
+                                    },
+                                    "pesoLiquido": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 0.5
+                                    },
+                                    "pesoBruto": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 0.55
+                                    },
+                                    "volumes": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "itensPorCaixa": {
+                                        "type": "integer",
+                                        "example": 10
+                                    },
+                                    "descricaoCurta": {
+                                        "type": "string",
+                                        "example": "Novo produto cadastrado agora"
+                                    },
+                                    "largura": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 30
+                                    },
+                                    "altura": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 2
+                                    },
+                                    "profundidade": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 25
+                                    },
+                                    "estoqueMinimo": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 1
+                                    },
+                                    "estoqueMaximo": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 10
+                                    },
+                                    "estoqueCrossdocking": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 0
+                                    },
+                                    "estoqueLocalizacao": {
+                                        "type": "string",
+                                        "example": "14A"
+                                    },
                                     "idEntrada_lotes": {
                                         "type": "integer",
                                         "example": 5
@@ -561,6 +621,316 @@
                     },
                     "404": {
                         "description": "Lote não encontrado."
+                    },
+                    "500": {
+                        "description": "Erro interno do servidor."
+                    }
+                }
+            }
+        },
+        "/produtorProducao/produtos_producao/alterar/{id}": {
+            "get": {
+                "tags": [
+                    "Produtos producao"
+                ],
+                "summary": "Buscar produto por ID",
+                "description": "Retorna os detalhes de um produto pelo seu ID.",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID do produto",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Produto encontrado com sucesso."
+                    },
+                    "400": {
+                        "description": "ID do produto inválido."
+                    },
+                    "404": {
+                        "description": "Produto não encontrado."
+                    },
+                    "500": {
+                        "description": "Erro interno do servidor."
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Produtos producao"
+                ],
+                "summary": "Atualizar produto por ID",
+                "description": "Atualiza os dados de um produto existente pelo ID. O ID no path deve ser igual ao ID do body.",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID do produto a ser atualizado",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 91
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "id"
+                                ],
+                                "properties": {
+                                    "id": {
+                                        "type": "integer",
+                                        "example": 91
+                                    },
+                                    "numeroIdentificador": {
+                                        "type": "string",
+                                        "example": "4334523"
+                                    },
+                                    "nomeProduto": {
+                                        "type": "string",
+                                        "example": "JAQUETA PRETAaaaaa"
+                                    },
+                                    "tipoEstilo": {
+                                        "type": "string",
+                                        "example": "CAMISA LARGA"
+                                    },
+                                    "tamanho": {
+                                        "type": "string",
+                                        "example": "GG"
+                                    },
+                                    "corPrimaria": {
+                                        "type": "string",
+                                        "example": "PRETO"
+                                    },
+                                    "corSecundaria": {
+                                        "type": "string",
+                                        "example": "VERMELHO"
+                                    },
+                                    "valorPorPeca": {
+                                        "type": "string",
+                                        "example": "12.21"
+                                    },
+                                    "quantidadeProduto": {
+                                        "type": "integer",
+                                        "example": 120
+                                    },
+                                    "someValorTotalProduto": {
+                                        "type": "string",
+                                        "example": "1465.20"
+                                    },
+                                    "dataEntrada": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ],
+                                        "format": "date-time",
+                                        "example": "2025-08-13T20:58:47.000Z"
+                                    },
+                                    "dataPrevistaSaida": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ],
+                                        "format": "date-time",
+                                        "example": "2025-08-14T03:00:00.000Z"
+                                    },
+                                    "dataSaida": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ],
+                                        "format": "date-time",
+                                        "example": null
+                                    },
+                                    "imagem": {
+                                        "type": "string",
+                                        "example": ""
+                                    },
+                                    "iniciado": {
+                                        "type": "integer",
+                                        "example": 0
+                                    },
+                                    "finalizado": {
+                                        "type": "integer",
+                                        "example": 0
+                                    },
+                                    "blingIdentify": {
+                                        "type": [
+                                            "integer",
+                                            "string",
+                                            "null"
+                                        ],
+                                        "example": 16520454844
+                                    },
+                                    "marca": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ],
+                                        "example": "Têxtil Brasil"
+                                    },
+                                    "pesoLiquido": {
+                                        "type": [
+                                            "string",
+                                            "number",
+                                            "null"
+                                        ],
+                                        "example": "1.00"
+                                    },
+                                    "pesoBruto": {
+                                        "type": [
+                                            "string",
+                                            "number",
+                                            "null"
+                                        ],
+                                        "example": "1.00"
+                                    },
+                                    "volumes": {
+                                        "type": [
+                                            "integer",
+                                            "null"
+                                        ],
+                                        "example": 1
+                                    },
+                                    "itensPorCaixa": {
+                                        "type": [
+                                            "integer",
+                                            "null"
+                                        ],
+                                        "example": 1
+                                    },
+                                    "descricaoCurta": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ],
+                                        "example": "CAMISA"
+                                    },
+                                    "largura": {
+                                        "type": [
+                                            "string",
+                                            "number",
+                                            "null"
+                                        ],
+                                        "example": "1.00"
+                                    },
+                                    "altura": {
+                                        "type": [
+                                            "string",
+                                            "number",
+                                            "null"
+                                        ],
+                                        "example": "1.00"
+                                    },
+                                    "profundidade": {
+                                        "type": [
+                                            "string",
+                                            "number",
+                                            "null"
+                                        ],
+                                        "example": "1.00"
+                                    },
+                                    "estoqueMinimo": {
+                                        "type": [
+                                            "integer",
+                                            "null"
+                                        ],
+                                        "example": 0
+                                    },
+                                    "estoqueMaximo": {
+                                        "type": [
+                                            "integer",
+                                            "null"
+                                        ],
+                                        "example": 0
+                                    },
+                                    "estoqueCrossdocking": {
+                                        "type": [
+                                            "integer",
+                                            "null"
+                                        ],
+                                        "example": 0
+                                    },
+                                    "estoqueLocalizacao": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ],
+                                        "example": ""
+                                    },
+                                    "idEntrada_lotes": {
+                                        "type": [
+                                            "integer",
+                                            "null"
+                                        ],
+                                        "example": 49
+                                    },
+                                    "idFilial": {
+                                        "type": [
+                                            "integer",
+                                            "null"
+                                        ],
+                                        "example": 1
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "example": {
+                                "id": 91,
+                                "numeroIdentificador": "4334523",
+                                "nomeProduto": "JAQUETA PRETAaaaaa",
+                                "tipoEstilo": "CAMISA LARGA",
+                                "tamanho": "GG",
+                                "corPrimaria": "PRETO",
+                                "corSecundaria": "VERMELHO",
+                                "valorPorPeca": "12.21",
+                                "quantidadeProduto": 120,
+                                "someValorTotalProduto": "1465.20",
+                                "dataEntrada": "2025-08-13T20:58:47.000Z",
+                                "dataPrevistaSaida": "2025-08-14T03:00:00.000Z",
+                                "dataSaida": null,
+                                "imagem": "",
+                                "finalizado": 0,
+                                "marca": "Têxtil Brasil",
+                                "pesoLiquido": "1.00",
+                                "pesoBruto": "1.00",
+                                "volumes": 1,
+                                "itensPorCaixa": 1,
+                                "descricaoCurta": "CAMISA",
+                                "largura": "1.00",
+                                "altura": "1.00",
+                                "profundidade": "1.00",
+                                "estoqueMinimo": 0,
+                                "estoqueMaximo": 0,
+                                "estoqueCrossdocking": 0,
+                                "estoqueLocalizacao": "",
+                                "idEntrada_lotes": 49,
+                                "idFilial": 1
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Produto atualizado com sucesso."
+                    },
+                    "400": {
+                        "description": "ID inválido, body inválido ou IDs (path/body) não conferem."
+                    },
+                    "404": {
+                        "description": "Produto não encontrado para atualização."
                     },
                     "500": {
                         "description": "Erro interno do servidor."
@@ -772,6 +1142,10 @@
                                         "items": {
                                             "type": "object",
                                             "properties": {
+                                                "numeroIdentificador": {
+                                                    "type": "string",
+                                                    "example": "341223"
+                                                },
                                                 "nomeProduto": {
                                                     "type": "string",
                                                     "example": "Camiseta Polo"
@@ -823,6 +1197,66 @@
                                                 "finalizado": {
                                                     "type": "boolean",
                                                     "example": false
+                                                },
+                                                "marca": {
+                                                    "type": "string",
+                                                    "example": "Sunny Aura"
+                                                },
+                                                "pesoLiquido": {
+                                                    "type": "number",
+                                                    "format": "float",
+                                                    "example": 0.5
+                                                },
+                                                "pesoBruto": {
+                                                    "type": "number",
+                                                    "format": "float",
+                                                    "example": 0.55
+                                                },
+                                                "volumes": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "itensPorCaixa": {
+                                                    "type": "integer",
+                                                    "example": 10
+                                                },
+                                                "descricaoCurta": {
+                                                    "type": "string",
+                                                    "example": "Novo produto cadastrado agora"
+                                                },
+                                                "largura": {
+                                                    "type": "number",
+                                                    "format": "float",
+                                                    "example": 30
+                                                },
+                                                "altura": {
+                                                    "type": "number",
+                                                    "format": "float",
+                                                    "example": 2
+                                                },
+                                                "profundidade": {
+                                                    "type": "number",
+                                                    "format": "float",
+                                                    "example": 25
+                                                },
+                                                "estoqueMinimo": {
+                                                    "type": "number",
+                                                    "format": "float",
+                                                    "example": 1
+                                                },
+                                                "estoqueMaximo": {
+                                                    "type": "number",
+                                                    "format": "float",
+                                                    "example": 10
+                                                },
+                                                "estoqueCrossdocking": {
+                                                    "type": "number",
+                                                    "format": "float",
+                                                    "example": 0
+                                                },
+                                                "estoqueLocalizacao": {
+                                                    "type": "string",
+                                                    "example": "14A"
                                                 }
                                             },
                                             "required": [

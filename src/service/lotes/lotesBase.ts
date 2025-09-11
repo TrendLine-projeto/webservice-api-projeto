@@ -2,43 +2,45 @@ import * as lotesModel from '../../models/lotes';
 import * as notaModel from '../../models/notaFiscal';
 import * as produtoModel from '../../models/produtosProducao';
 import * as fornecedorModel from '../../models/fornecedorProducao'
+import * as notasFiscais from '../../models/notaFiscal';
 import { EntradaDeLote } from '../../types/lotes/EntradaDeLote';
 import { NotaFiscal } from '../../types/notasFiscais/notaFiscal';
-import * as notasFiscais from '../../models/notaFiscal';
+import { normalizeProdutoEntrada } from '../../helpers/normalizeProdutoEntrada';
+import { inserirProdutosCapturandoIds } from '../../helpers/inserirProdutosCapturandoIds';
+import { integrarProdutosNoBling } from '../../helpers/integrarProdutosNoBling';
 
-export const criarLote = async (
-  entradaDeLote: EntradaDeLote,
-  notaFiscal?: NotaFiscal
-) => {
+export const criarLote = async ( entradaDeLote: EntradaDeLote, notaFiscal?: NotaFiscal, opts: { integrarNoBling?: boolean; concurrency?: number } = { integrarNoBling: true, concurrency: 3 }) => {
   const filialExiste = await lotesModel.verificarFilialPorId(entradaDeLote.idFilial);
-
   if (!filialExiste) {
-    throw {
-      tipo: 'FilialNaoEncontrada',
-      mensagem: 'Filial não encontrada. Verifique o ID informado.'
-    };
+    throw { tipo: 'FilialNaoEncontrada', mensagem: 'Filial não encontrada. Verifique o ID informado.' };
   }
 
-  const resultadoLote = await lotesModel.inserirLote(entradaDeLote);
-  const idLoteCriado = resultadoLote.insertId;
+  const { insertId: idLoteCriado } = await lotesModel.inserirLote(entradaDeLote);
 
-  if (entradaDeLote.produtos && entradaDeLote.produtos.length > 0) {
-    await lotesModel.inserirProdutosNoLote(idLoteCriado, entradaDeLote.produtos);
-  }
+  const entradaProdutos = Array.isArray(entradaDeLote.produtos) ? entradaDeLote.produtos : [];
+  const produtosNormalizados = entradaProdutos.map((p, idx) =>
+    normalizeProdutoEntrada(entradaDeLote, p, idx, idLoteCriado)
+  );
+  const idsLocais = await inserirProdutosCapturandoIds(produtosNormalizados);
 
   if (notaFiscal) {
+    try { await notasFiscais.inserirNotaFiscal(notaFiscal, idLoteCriado); }
+    catch (e) { console.error('Erro ao inserir nota fiscal:', e); }
+  }
+
+  let resultadosBling: any[] = [];
+  if (opts.integrarNoBling && produtosNormalizados.length) {
     try {
-      await notasFiscais.inserirNotaFiscal(notaFiscal, idLoteCriado);
-    } catch (erroNota) {
-      console.error("Erro ao inserir nota fiscal:", erroNota);
+      resultadosBling = await integrarProdutosNoBling(produtosNormalizados, idsLocais, { concurrency: opts.concurrency });
+    } catch (e) {
+      console.error('Falha na integração com Bling:', e);
     }
-  } else {
-    console.warn("Nenhuma nota fiscal fornecida para este lote.");
   }
 
   return {
     id: idLoteCriado,
-    ...entradaDeLote
+    ...entradaDeLote,
+    resultadosBling,
   };
 };
 

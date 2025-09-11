@@ -1,6 +1,5 @@
 import pool from '../connect/mysql';
-import { PoolConnection, RowDataPacket } from 'mysql2/promise';
-import { EntradaDeLote } from '../types/lotes/EntradaDeLote';
+import { PoolConnection, RowDataPacket, ResultSetHeader} from 'mysql2/promise';
 import { ProdutoProducao } from '../types/ProdutoProducao/ProdutoProducao';
 
 export const verificarLotePorId = async (idLote: number): Promise<boolean> => {
@@ -32,9 +31,24 @@ export const inserirProduto = async (produto: ProdutoProducao): Promise<any> => 
                 dataSaida,
                 imagem,
                 finalizado,
+
+                marca,
+                pesoLiquido,
+                pesoBruto,
+                volumes,
+                itensPorCaixa,
+                descricaoCurta,
+                largura,
+                altura,
+                profundidade,
+                estoqueMinimo,
+                estoqueMaximo,
+                estoqueCrossdocking,
+                estoqueLocalizacao,
+
                 idEntrada_lotes,
                 idFilial
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?, ?, ?)
+            ) VALUES (   ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?,        ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,         ?, ?)
         `;
 
     const valores = [
@@ -51,6 +65,21 @@ export const inserirProduto = async (produto: ProdutoProducao): Promise<any> => 
       produto.dataSaida,
       produto.imagem,
       produto.finalizado,
+
+      produto.marca,
+      produto.pesoLiquido,
+      produto.pesoBruto,
+      produto.volumes,
+      produto.itensPorCaixa,
+      produto.descricaoCurta,
+      produto.largura,
+      produto.altura,
+      produto.profundidade,
+      produto.estoqueMinimo,
+      produto.estoqueMaximo,
+      produto.estoqueCrossdocking,
+      produto.estoqueLocalizacao,
+
       produto.idEntrada_lotes,
       produto.idFilial
     ];
@@ -220,28 +249,107 @@ export const buscarProdutosPorCliente = async (filtros: any): Promise<{ totalReg
 };
 
 export const buscarProdutoPorId = async (idProdutoProducao: number): Promise<RowDataPacket | null> => {
-    const conn: PoolConnection = await pool.getConnection();
+  const conn: PoolConnection = await pool.getConnection();
 
-    try {
-        const [result] = await conn.query<RowDataPacket[]>(
-            `SELECT * FROM produtos_producao WHERE id = ?`,
-            [idProdutoProducao]
-        );
+  try {
+    const [result] = await conn.query<RowDataPacket[]>(
+      `SELECT * FROM produtos_producao WHERE id = ?`,
+      [idProdutoProducao]
+    );
 
-        return result.length > 0 ? result[0] : null;
-    } finally {
-        conn.release();
+    return result.length > 0 ? result[0] : null;
+  } finally {
+    conn.release();
+  }
+};
+
+// **Atualizar por id** (dinâmico e seguro)
+export const atualizarProdutoPorId = async (
+  idProdutoProducao: number,
+  dados: Record<string, any>
+): Promise<void> => {
+  const conn: PoolConnection = await pool.getConnection();
+  try {
+    // Mapeamento 1:1 dos campos do body para as colunas (assumindo nomes iguais às chaves do body).
+    // Se suas colunas no banco tiverem nomes diferentes, ajuste o mapa abaixo.
+    const mapaColunas: Record<string, string> = {
+      numeroIdentificador: 'numeroIdentificador',
+      nomeProduto: 'nomeProduto',
+      tipoEstilo: 'tipoEstilo',
+      tamanho: 'tamanho',
+      corPrimaria: 'corPrimaria',
+      corSecundaria: 'corSecundaria',
+      valorPorPeca: 'valorPorPeca',
+      quantidadeProduto: 'quantidadeProduto',
+      someValorTotalProduto: 'someValorTotalProduto',
+      dataEntrada: 'dataEntrada',
+      dataPrevistaSaida: 'dataPrevistaSaida',
+      dataSaida: 'dataSaida',
+      imagem: 'imagem',
+      iniciado: 'iniciado',
+      finalizado: 'finalizado',
+      blingIdentify: 'blingIdentify',
+      marca: 'marca',
+      pesoLiquido: 'pesoLiquido',
+      pesoBruto: 'pesoBruto',
+      volumes: 'volumes',
+      itensPorCaixa: 'itensPorCaixa',
+      descricaoCurta: 'descricaoCurta',
+      largura: 'largura',
+      altura: 'altura',
+      profundidade: 'profundidade',
+      estoqueMinimo: 'estoqueMinimo',
+      estoqueMaximo: 'estoqueMaximo',
+      estoqueCrossdocking: 'estoqueCrossdocking',
+      estoqueLocalizacao: 'estoqueLocalizacao',
+      idEntrada_lotes: 'idEntrada_lotes',
+      idFilial: 'idFilial',
+    };
+
+    const sets: string[] = [];
+    const params: any[] = [];
+
+    Object.entries(dados).forEach(([campo, valor]) => {
+      const coluna = mapaColunas[campo];
+      if (coluna) {
+        sets.push(`\`${coluna}\` = ?`);
+        params.push(valor);
+      }
+    });
+
+    if (sets.length === 0) {
+      // Nada para atualizar — retorna silenciosamente
+      return;
     }
+
+    params.push(idProdutoProducao);
+
+    const sql = `
+      UPDATE produtos_producao
+         SET ${sets.join(', ')}
+       WHERE id = ?
+      LIMIT 1
+    `;
+
+    const [result] = await conn.query<ResultSetHeader>(sql, params);
+
+    if (result.affectedRows === 0) {
+      // Não encontrou o registro — opcional jogar erro
+      // throw new Error('Registro não encontrado para atualização');
+    }
+  } finally {
+    conn.release();
+  }
 };
 
 export const deletarPorId = async (idProduto: number): Promise<void> => {
-    const conn: PoolConnection = await pool.getConnection();
+  const conn: PoolConnection = await pool.getConnection();
 
-    try {
-        await conn.query(`DELETE FROM produtos_producao WHERE id = ?`, [idProduto]);
-    } finally {
-        conn.release();
-    }
+  try {
+    await conn.query(`DELETE FROM produtos_producao WHERE id = ?`, [idProduto]);
+  } finally {
+    conn.release();
+  }
 };
 
 export const buscarProdutosPorLoteIds = async (loteIds: number[]) => {
@@ -271,6 +379,14 @@ export const buscarProdutosPorLoteIds = async (loteIds: number[]) => {
     conn.release();
   }
 };
+
+export const atualizarBlingIdentify = async (idProduto: number, blingId: number) => {
+  const [result]: any = await pool.query(
+    'UPDATE produtos_producao SET blingIdentify = ? WHERE id = ?',
+    [blingId, idProduto],
+  );
+  return result.affectedRows === 1;
+}
 
 /*export const inserirProdutosNoLote = async (idLote: number, produtos: ProdutoProducao[]) => {
     const conn: PoolConnection = await pool.getConnection();

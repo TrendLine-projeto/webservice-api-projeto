@@ -14,6 +14,21 @@ export interface ProdutoProducao {
     dataSaida?: string;
     imagem?: string;
     finalizado?: number;
+
+    marca?: string,
+    pesoLiquido?: number,
+    pesoBruto?: number,
+    volumes?: number,
+    itensPorCaixa?: number,
+    descricaoCurta?: string,
+    largura?: number,
+    altura?: number,
+    profundidade?: number,
+    estoqueMinimo?: number,
+    estoqueMaximo?: number,
+    estoqueCrossdocking?: number,
+    estoqueLocalizacao?: string,
+
     idEntrada_lotes?: number;
     idFilial: number;
 }

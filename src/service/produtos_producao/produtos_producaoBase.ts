@@ -1,25 +1,57 @@
 import * as ProdutosSupriModel from '../../models/produtosProducao';
 import { ProdutoProducao } from '../../types/ProdutoProducao/ProdutoProducao';
+import { createBlingProduct } from '../../integration/bling/produtos/produtos.api';
+import { mapProdutoToBlingPayload }from '../../integration/bling/produtos/bling-product.dto'
+
+const toMySQLDateTime = (val: any, fieldName: string) => {
+  if (val === null || val === undefined || val === '') return null;
+  const d = new Date(val);
+  if (isNaN(d.getTime())) {
+    throw { tipo: 'Validacao', mensagem: `Data inválida no campo ${fieldName}` };
+  }
+  // '2025-08-13 20:58:47'
+  return d.toISOString().slice(0, 19).replace('T', ' ');
+};
+
+const toNumberOrNull = (val: any) => {
+  if (val === null || val === undefined || val === '') return null;
+  const n = Number(val);
+  return isNaN(n) ? null : n;
+};
 
 export const criarProduto = async (entradaProduto: ProdutoProducao) => {
-    if (!entradaProduto.idEntrada_lotes) {
-        throw { tipo: 'Validacao', mensagem: 'Identificação do lote principal é obrigatória' };
+  if (!entradaProduto.idEntrada_lotes) {
+    throw { tipo: 'Validacao', mensagem: 'Identificação do lote principal é obrigatória' };
+  }
+
+  const loteExiste = await ProdutosSupriModel.verificarLotePorId(entradaProduto.idEntrada_lotes);
+  if (!loteExiste) {
+    throw { tipo: 'LotePrincipal', mensagem: 'Lote principal não encontrado. Verifique o ID informado.' };
+  }
+
+  const resultado = await ProdutosSupriModel.inserirProduto(entradaProduto);
+  const produtoLocalId = resultado.insertId;
+  const payloadBling = mapProdutoToBlingPayload(entradaProduto, produtoLocalId);
+
+  try {
+    const criado = await createBlingProduct(payloadBling);
+    const blingId = Number(criado?.data?.id);
+
+    if (!blingId) {
+      return { id: produtoLocalId, blingSync: 'failed', error: 'Bling sem id' };
     }
 
-    // Verifica se o lote existe
-    const loteExiste = await ProdutosSupriModel.verificarLotePorId(entradaProduto.idEntrada_lotes);
+    const ok = await ProdutosSupriModel.atualizarBlingIdentify(produtoLocalId, blingId);
 
-    if (!loteExiste) {
-        throw { tipo: 'LotePrincipal', mensagem: 'Lote principal não encontrado. Verifique o ID informado.' };
+    if (!ok) {
+      return { id: produtoLocalId, BlingProdutoId: null, blingSync: 'update_failed' };
     }
+    
+    return { id: produtoLocalId, BlingProdutoId: blingId, ...entradaProduto };
 
-    // Cria o produto no banco
-    const resultado = await ProdutosSupriModel.inserirProduto(entradaProduto);
-
-    return {
-        id: resultado.insertId,
-        ...entradaProduto
-    };
+  } catch (e: any) {
+    return { id: produtoLocalId, blingSync: 'failed', error: String(e) };
+  }
 };
 
 export const buscarProdutosPorCliente = async (filtros: any) => {
@@ -56,6 +88,62 @@ export const buscarProdutoPorId = async (id: number) => {
 
     const produto = await ProdutosSupriModel.buscarProdutoPorId(id);
     return produto;
+};
+
+export const atualizarProdutoPorId = async (id: number, body: ProdutoProducao) => {
+  if (!id || isNaN(id)) {
+    throw { tipo: 'Validacao', mensagem: 'ID do produto inválido' };
+  }
+
+  const existente = await ProdutosSupriModel.buscarProdutoPorId(id);
+  if (!existente) return null;
+
+  // lista branca permanece a mesma
+  const camposPermitidos: (keyof ProdutoProducao)[] = [
+    'numeroIdentificador','nomeProduto','tipoEstilo','tamanho','corPrimaria','corSecundaria',
+    'valorPorPeca','quantidadeProduto','someValorTotalProduto',
+    'dataEntrada','dataPrevistaSaida','dataSaida',
+    'imagem','finalizado','marca',
+    'pesoLiquido','pesoBruto','volumes','itensPorCaixa','descricaoCurta',
+    'largura','altura','profundidade',
+    'estoqueMinimo','estoqueMaximo','estoqueCrossdocking','estoqueLocalizacao',
+    'idEntrada_lotes','idFilial',
+  ];
+
+  // 🔧 Normalização específica de campos
+  const normalizado: Record<string, any> = {};
+  for (const campo of camposPermitidos) {
+    if (!Object.prototype.hasOwnProperty.call(body, campo)) continue;
+
+    const valor = (body as any)[campo];
+
+    if (campo === 'dataEntrada' || campo === 'dataPrevistaSaida' || campo === 'dataSaida') {
+      normalizado[campo] = toMySQLDateTime(valor, campo);  // <-- resolve o erro do MySQL
+      continue;
+    }
+
+    if (['valorPorPeca','someValorTotalProduto','pesoLiquido','pesoBruto','largura','altura','profundidade']
+        .includes(campo as string)) {
+      normalizado[campo] = toNumberOrNull(valor); // grava como number ou null
+      continue;
+    }
+
+    if (['volumes','itensPorCaixa','quantidadeProduto','estoqueMinimo','estoqueMaximo','estoqueCrossdocking',
+         'idEntrada_lotes','idFilial','iniciado','finalizado'].includes(campo as string)) {
+      normalizado[campo] = (valor === '' || valor === null || valor === undefined) ? null : Number(valor);
+      continue;
+    }
+
+    // demais campos ficam como vieram (string/null)
+    normalizado[campo] = (valor === '') ? '' : valor;
+  }
+
+  if (Object.keys(normalizado).length === 0) {
+    throw { tipo: 'Validacao', mensagem: 'Nenhum campo válido para atualização' };
+  }
+
+  await ProdutosSupriModel.atualizarProdutoPorId(id, normalizado);
+  return await ProdutosSupriModel.buscarProdutoPorId(id);
 };
 
 export const deletarProdutoPorId = async (id: number): Promise<boolean> => {

@@ -1,7 +1,6 @@
 import pool from '../connect/mysql';
 import { PoolConnection, ResultSetHeader, RowDataPacket } from 'mysql2/promise';
 import { EntradaDeLote } from '../types/lotes/EntradaDeLote';
-import { ProdutoProducao } from '../types/lotes/ProdutoProducao';
 
 export const verificarFilialPorId = async (idFilial: number): Promise<boolean> => {
   const conn: PoolConnection = await pool.getConnection();
@@ -108,9 +107,7 @@ export const buscarLotesPorCliente = async (filtros: any) => {
   }
 
   const queryBusca = `
-    SELECT 
-        id, numeroIdentificador, nomeEntregador, nomeRecebedor, valorEstimado, valorHoraEstimado, dataEntrada, dataPrevistaSaida, dataInicio, dataSaida, loteIniciado, loteFinalizado, idFilial, idFornecedor_producao
-    FROM entrada_lotes
+    SELECT * FROM entrada_lotes 
     ${where}
     ORDER BY id DESC
     LIMIT ? OFFSET ?
@@ -144,7 +141,8 @@ export const inserirProdutosNoLote = async (idLote: number, produtos: any[]) => 
             INSERT INTO produtos_producao (
                 numeroIdentificador, nomeProduto, tipoEstilo, tamanho, corPrimaria, corSecundaria,
                 valorPorPeca, quantidadeProduto, someValorTotalProduto, dataEntrada, dataPrevistaSaida, dataSaida,
-                imagem, finalizado, idEntrada_lotes, idFilial
+                imagem, iniciado, finalizado, marca, pesoLiquido, pesoBruto, volumes, itensPorCaixa, descricaoCurta,
+                largura, altura, profundidade, estoqueMinimo, estoqueMaximo, estoqueCrossdocking, estoqueLocalizacao, idEntrada_lotes, idFilial
             ) VALUES ?
         `;
 
@@ -162,7 +160,23 @@ export const inserirProdutosNoLote = async (idLote: number, produtos: any[]) => 
       produto.dataPrevistaSaida || null,
       produto.dataSaida || null,
       produto.imagem || null,
+      produto.iniciado || 0,
       produto.finalizado || 0,
+
+      produto.marca || null,
+      produto.pesoLiquido || 0,
+      produto.pesoBruto || 0,
+      produto.volumes || 0,
+      produto.itensPorCaixa || 0,
+      produto.descricaoCurta || null,
+      produto.largura || 0,
+      produto.altura || 0,
+      produto.profundidade || 0,
+      produto.estoqueMinimo || 0,
+      produto.estoqueMaximo || 0,
+      produto.estoqueCrossdocking || 0,
+      produto.estoqueLocalizacao || null,
+
       idLote,
       produto.idFilial
     ]);
