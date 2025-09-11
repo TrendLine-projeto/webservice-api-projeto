@@ -1008,6 +1008,118 @@
                 }
             }
         },
+        "/lotes/entrada_lotes/iniciarLote": {
+            "post": {
+                "tags": [
+                    "Lotes"
+                ],
+                "summary": "Iniciar um lote de produção",
+                "description": "Define loteIniciado = 1 e grava dataEntrada no formato 'YYYY-MM-DD HH:mm:ss' para o lote e para todos os produtos vinculados (produtos_producao).",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "idEntrada_lotes": {
+                                        "type": "integer",
+                                        "example": 10,
+                                        "description": "ID do lote que será iniciado"
+                                    }
+                                },
+                                "required": [
+                                    "idEntrada_lotes"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Lote iniciado com sucesso.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "mensagem": {
+                                            "type": "string",
+                                            "example": "Lote iniciado com sucesso"
+                                        },
+                                        "idEntrada_lotes": {
+                                            "type": "integer",
+                                            "example": 10
+                                        },
+                                        "dataEntrada": {
+                                            "type": "string",
+                                            "example": "2025-07-04 19:21:30",
+                                            "description": "Data/hora aplicada ao lote e aos produtos"
+                                        },
+                                        "lotesAfetados": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "produtosAfetados": {
+                                            "type": "integer",
+                                            "example": 23
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Requisição inválida.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "erro": {
+                                            "type": "string",
+                                            "example": "ID do lote é obrigatório"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Lote não encontrado.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "erro": {
+                                            "type": "string",
+                                            "example": "Lote não encontrado"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Erro interno do servidor.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "erro": {
+                                            "type": "string",
+                                            "example": "Falha ao iniciar o lote"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/lotes/entrada_lotes/encerarLote": {
             "post": {
                 "tags": [
@@ -1470,6 +1582,136 @@
                     },
                     "404": {
                         "description": "Nenhum lote encontrado."
+                    },
+                    "500": {
+                        "description": "Erro interno do servidor."
+                    }
+                }
+            }
+        },
+        "/lotes/entrada_lotes/alterar/{id}": {
+            "put": {
+                "tags": [
+                    "Lotes"
+                ],
+                "summary": "Atualizar completamente um lote",
+                "description": "Substitui todos os campos do lote pelos valores enviados no corpo (pode usar null para limpar).",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 10
+                        },
+                        "description": "ID do lote a ser atualizado"
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "numeroIdentificador": {
+                                        "type": "string",
+                                        "nullable": true,
+                                        "example": "L-2025-0001"
+                                    },
+                                    "nomeEntregador": {
+                                        "type": "string",
+                                        "nullable": true,
+                                        "example": "João da Silva"
+                                    },
+                                    "nomeRecebedor": {
+                                        "type": "string",
+                                        "nullable": true,
+                                        "example": "Maria Souza"
+                                    },
+                                    "valorEstimado": {
+                                        "type": "number",
+                                        "nullable": true,
+                                        "example": 1500.75
+                                    },
+                                    "valorHoraEstimado": {
+                                        "type": "number",
+                                        "nullable": true,
+                                        "example": 120.5
+                                    },
+                                    "dataEntrada": {
+                                        "type": "string",
+                                        "nullable": true,
+                                        "example": "2025-07-04 19:21:30"
+                                    },
+                                    "dataPrevistaSaida": {
+                                        "type": "string",
+                                        "nullable": true,
+                                        "example": "2025-07-10 18:00:00"
+                                    },
+                                    "dataInicio": {
+                                        "type": "string",
+                                        "nullable": true,
+                                        "example": "2025-07-05 08:00:00"
+                                    },
+                                    "dataSaida": {
+                                        "type": "string",
+                                        "nullable": true,
+                                        "example": "2025-07-11 17:30:00"
+                                    }
+                                },
+                                "additionalProperties": false
+                            },
+                            "examples": {
+                                "corpoCompleto": {
+                                    "summary": "Exemplo de atualização completa",
+                                    "value": {
+                                        "numeroIdentificador": "L-2025-0001",
+                                        "nomeEntregador": "João da Silva",
+                                        "nomeRecebedor": "Maria Souza",
+                                        "valorEstimado": 1500.75,
+                                        "valorHoraEstimado": 120.5,
+                                        "dataEntrada": "2025-07-04 19:21:30",
+                                        "dataPrevistaSaida": "2025-07-10 18:00:00",
+                                        "dataInicio": "2025-07-05 08:00:00",
+                                        "dataSaida": "2025-07-11 17:30:00"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Lote atualizado.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "mensagem": {
+                                            "type": "string",
+                                            "example": "Lote atualizado"
+                                        },
+                                        "idEntrada_lotes": {
+                                            "type": "integer",
+                                            "example": 10
+                                        },
+                                        "registrosAfetados": {
+                                            "type": "integer",
+                                            "example": 1
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Requisição inválida (ID ausente ou campo obrigatório não enviado)."
+                    },
+                    "404": {
+                        "description": "Lote não encontrado."
                     },
                     "500": {
                         "description": "Erro interno do servidor."

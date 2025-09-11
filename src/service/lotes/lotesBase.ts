@@ -4,12 +4,22 @@ import * as produtoModel from '../../models/produtosProducao';
 import * as fornecedorModel from '../../models/fornecedorProducao'
 import * as notasFiscais from '../../models/notaFiscal';
 import { EntradaDeLote } from '../../types/lotes/EntradaDeLote';
+import { LotePut } from '../../types/lotes/AlterarLote';
 import { NotaFiscal } from '../../types/notasFiscais/notaFiscal';
 import { normalizeProdutoEntrada } from '../../helpers/normalizeProdutoEntrada';
 import { inserirProdutosCapturandoIds } from '../../helpers/inserirProdutosCapturandoIds';
 import { integrarProdutosNoBling } from '../../helpers/integrarProdutosNoBling';
 
-export const criarLote = async ( entradaDeLote: EntradaDeLote, notaFiscal?: NotaFiscal, opts: { integrarNoBling?: boolean; concurrency?: number } = { integrarNoBling: true, concurrency: 3 }) => {
+const pad2 = (n: number) => String(n).padStart(2, '0');
+
+// Gera "YYYY-MM-DD HH:mm:ss"
+const agoraFormatado = (): string => {
+  const d = new Date();
+  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())} ` +
+    `${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}`;
+};
+
+export const criarLote = async (entradaDeLote: EntradaDeLote, notaFiscal?: NotaFiscal, opts: { integrarNoBling?: boolean; concurrency?: number } = { integrarNoBling: true, concurrency: 3 }) => {
   const filialExiste = await lotesModel.verificarFilialPorId(entradaDeLote.idFilial);
   if (!filialExiste) {
     throw { tipo: 'FilialNaoEncontrada', mensagem: 'Filial não encontrada. Verifique o ID informado.' };
@@ -119,6 +129,55 @@ export const buscarLotePorId = async (idLote: number) => {
   };
 };
 
+export const iniciarLote = async (idLote: number) => {
+  if (!idLote) throw { status: 400, mensagem: 'ID do lote é obrigatório' };
+
+  const dataEntrada = new Date(); // só se for montar string; se usar NOW(), pode remover
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const fmt = `${dataEntrada.getFullYear()}-${pad(dataEntrada.getMonth() + 1)}-${pad(dataEntrada.getDate())} ${pad(dataEntrada.getHours())}:${pad(dataEntrada.getMinutes())}:${pad(dataEntrada.getSeconds())}`;
+
+  const { lotesAfetados, produtosAfetados } = await lotesModel.iniciarLote(idLote, fmt);
+
+  if (lotesAfetados === 0) throw { status: 404, mensagem: 'Lote não encontrado' };
+
+  return { idEntrada_lotes: idLote, dataEntrada: fmt, lotesAfetados, produtosAfetados };
+};
+
+export const atualizarLoteCompleto = async (id: number, body: Partial<LotePut>) => {
+  if (!id) throw { status: 400, mensagem: 'ID do lote é obrigatório' };
+  if (!body || typeof body !== 'object') throw { status: 400, mensagem: 'Corpo inválido' };
+
+  // Cast numérico simples (se vier string numérica)
+  const valorEstimado =
+    body.valorEstimado === null ? null : Number(body.valorEstimado);
+  const valorHoraEstimado =
+    body.valorHoraEstimado === null ? null : Number(body.valorHoraEstimado);
+
+  if (body.valorEstimado !== null && Number.isNaN(valorEstimado)) {
+    throw { status: 400, mensagem: 'valorEstimado deve ser numérico' };
+  }
+  if (body.valorHoraEstimado !== null && Number.isNaN(valorHoraEstimado)) {
+    throw { status: 400, mensagem: 'valorHoraEstimado deve ser numérico' };
+  }
+
+  const { affectedRows } = await lotesModel.atualizarLoteCompleto(
+    id,
+    body.numeroIdentificador ?? null,
+    body.nomeEntregador ?? null,
+    body.nomeRecebedor ?? null,
+    valorEstimado,
+    valorHoraEstimado,
+    body.dataEntrada ?? null,
+    body.dataPrevistaSaida ?? null,
+    body.dataInicio ?? null,
+    body.dataSaida ?? null
+  );
+
+  if (affectedRows === 0) throw { status: 404, mensagem: 'Lote não encontrado' };
+
+  return { idEntrada_lotes: id, registrosAfetados: affectedRows };
+};
+
 export const deletarLoteComProdutos = async (idLote: number) => {
   if (isNaN(idLote)) {
     throw { status: 400, mensagem: 'ID do lote inválido' };
@@ -141,4 +200,3 @@ export const deletarLoteComProdutos = async (idLote: number) => {
   await lotesModel.deletarProdutosDoLote(idLote);
   await lotesModel.deletarLotePorId(idLote);
 };
-

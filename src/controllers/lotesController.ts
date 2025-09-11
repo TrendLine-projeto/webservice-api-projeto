@@ -90,6 +90,31 @@ export const buscarLotePorId = async (req: Request, res: Response) => {
   }
 };
 
+export const iniciarLote = async (req: Request, res: Response) => {
+  const { idEntrada_lotes } = req.body;
+
+  try {
+    const resultado = await lotesService.iniciarLote(idEntrada_lotes);
+    return res.status(200).send({
+      mensagem: 'Lote iniciado com sucesso',
+      ...resultado,
+    });
+  } catch (error: any) {
+    const status = error.status || 500;
+    return res.status(status).send({ erro: error.mensagem || error });
+  }
+};
+
+export const atualizarLoteCompleto = async (req: Request, res: Response) => {
+  try {
+    const id = Number(req.params.id);
+    const resultado = await lotesService.atualizarLoteCompleto(id, req.body);
+    return res.status(200).send({ mensagem: 'Lote atualizado', ...resultado });
+  } catch (error: any) {
+    return res.status(error.status || 500).send({ erro: error.mensagem || 'Erro interno' });
+  }
+};
+
 export const deletarPorId = async (req: Request, res: Response) => {
   const idLote = parseInt(req.params.id, 10);
 

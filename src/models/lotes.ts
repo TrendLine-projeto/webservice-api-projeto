@@ -296,6 +296,106 @@ export const deletarProdutosDoLote = async (idLote: number) => {
   }
 };
 
+export const iniciarLote = async (idLote: number, dataEntrada: string) => {
+  const conn: PoolConnection = await pool.getConnection();
+
+  try {
+    await conn.beginTransaction();
+
+    const [resLote] = await conn.query<ResultSetHeader>(
+      `UPDATE entrada_lotes
+         SET loteIniciado = 1,
+             dataEntrada  = ?
+       WHERE id = ?`,
+      [dataEntrada, idLote]
+    );
+
+    // ⚠️ Se 'loteIniciado' e/ou 'dataEntrada' NÃO existem em produtos_producao,
+    // comente a(s) coluna(s) correspondente(s) abaixo.
+    const [resProdutos] = await conn.query<ResultSetHeader>(
+      `UPDATE produtos_producao
+          SET iniciado = 1
+        WHERE idEntrada_lotes = ?`,
+      [idLote]
+    );
+
+    await conn.commit();
+
+    return {
+      lotesAfetados: resLote.affectedRows,
+      produtosAfetados: resProdutos.affectedRows,
+    };
+  } catch (err: any) {
+    await conn.rollback();
+
+    // Log detalhado para achar o problema real
+    console.error('Erro iniciarLote SQL:', {
+      message: err?.message,
+      sqlMessage: err?.sqlMessage,
+      code: err?.code,
+      sql: err?.sql,
+    });
+
+    // Propaga motivo legível
+    const motivo = err?.sqlMessage || err?.message || 'Falha ao iniciar o lote';
+    throw { status: 500, mensagem: motivo };
+  } finally {
+    conn.release();
+  }
+};
+
+export const atualizarLoteCompleto = async (
+  id: number,
+  numeroIdentificador: string | null,
+  nomeEntregador: string | null,
+  nomeRecebedor: string | null,
+  valorEstimado: number | null,
+  valorHoraEstimado: number | null,
+  dataEntrada: string | null,
+  dataPrevistaSaida: string | null,
+  dataInicio: string | null,
+  dataSaida: string | null
+) => {
+  const conn: PoolConnection = await pool.getConnection();
+  try {
+    const sql = `
+      UPDATE entrada_lotes
+         SET
+           numeroIdentificador = ?,
+           nomeEntregador      = ?,
+           nomeRecebedor       = ?,
+           valorEstimado       = ?,
+           valorHoraEstimado   = ?,
+           dataEntrada         = ?,
+           dataPrevistaSaida   = ?,
+           dataInicio          = ?,
+           dataSaida           = ?
+       WHERE id = ?
+       LIMIT 1
+    `;
+    const params = [
+      numeroIdentificador,
+      nomeEntregador,
+      nomeRecebedor,
+      valorEstimado,
+      valorHoraEstimado,
+      dataEntrada,
+      dataPrevistaSaida,
+      dataInicio,
+      dataSaida,
+      id,
+    ];
+
+    const [res] = await conn.query<ResultSetHeader>(sql, params);
+    return { affectedRows: res.affectedRows };
+  } catch (err: any) {
+    console.error('Erro atualizarLoteCompleto SQL:', err?.sqlMessage || err?.message || err);
+    throw { status: 500, mensagem: err?.sqlMessage || 'Falha ao atualizar lote' };
+  } finally {
+    conn.release();
+  }
+};
+
 export const deletarLotePorId = async (idLote: number) => {
   const conn: PoolConnection = await pool.getConnection();
 

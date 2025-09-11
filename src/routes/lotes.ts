@@ -6,9 +6,11 @@ const router = Router();
 
 router.post('/entrada_lotes', lotesController.criarLote);
 router.post('/entrada_lotes/buscar', lotesController.buscarLotesComFiltro);
+router.post('/entrada_lotes/iniciarLote', lotesController.iniciarLote);
 router.post('/entrada_lotes/encerarLote', lotesController.encerrarLote);
 router.post('/entrada_lotes/reabrirLote', lotesController.reabrirLote);
 router.get('/entrada_lotes/:id', lotesController.buscarLotePorId);
+router.put('/entrada_lotes/alterar/:id', lotesController.atualizarLoteCompleto);
 router.delete('/entrada_lotes/deletar/:id', lotesController.deletarPorId);
 
 export default router;
