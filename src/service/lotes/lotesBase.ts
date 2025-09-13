@@ -132,9 +132,9 @@ export const buscarLotePorId = async (idLote: number) => {
 export const iniciarLote = async (idLote: number) => {
   if (!idLote) throw { status: 400, mensagem: 'ID do lote é obrigatório' };
 
-  const dataEntrada = new Date(); // só se for montar string; se usar NOW(), pode remover
+  const dataInicio = new Date();
   const pad = (n: number) => String(n).padStart(2, '0');
-  const fmt = `${dataEntrada.getFullYear()}-${pad(dataEntrada.getMonth() + 1)}-${pad(dataEntrada.getDate())} ${pad(dataEntrada.getHours())}:${pad(dataEntrada.getMinutes())}:${pad(dataEntrada.getSeconds())}`;
+  const fmt = `${dataInicio.getFullYear()}-${pad(dataInicio.getMonth() + 1)}-${pad(dataInicio.getDate())} ${pad(dataInicio.getHours())}:${pad(dataInicio.getMinutes())}:${pad(dataInicio.getSeconds())}`;
 
   const { lotesAfetados, produtosAfetados } = await lotesModel.iniciarLote(idLote, fmt);
 

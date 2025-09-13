@@ -296,7 +296,7 @@ export const deletarProdutosDoLote = async (idLote: number) => {
   }
 };
 
-export const iniciarLote = async (idLote: number, dataEntrada: string) => {
+export const iniciarLote = async (idLote: number, dataInicio: string) => {
   const conn: PoolConnection = await pool.getConnection();
 
   try {
@@ -305,13 +305,11 @@ export const iniciarLote = async (idLote: number, dataEntrada: string) => {
     const [resLote] = await conn.query<ResultSetHeader>(
       `UPDATE entrada_lotes
          SET loteIniciado = 1,
-             dataEntrada  = ?
+             dataInicio  = ?
        WHERE id = ?`,
-      [dataEntrada, idLote]
+      [dataInicio, idLote]
     );
 
-    // ⚠️ Se 'loteIniciado' e/ou 'dataEntrada' NÃO existem em produtos_producao,
-    // comente a(s) coluna(s) correspondente(s) abaixo.
     const [resProdutos] = await conn.query<ResultSetHeader>(
       `UPDATE produtos_producao
           SET iniciado = 1
