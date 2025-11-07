@@ -13,6 +13,8 @@ import rotaProdutosProducao from '../src/routes/produtosProducao';
 import rotaEstoqueMateriaPrima from '../src/routes/estoqueMateriaPrima';
 import rotaInsumosTecnicos from '../src/routes/estoqueInsumos';
 import rotaTipoProdutos from '../src/routes/tipoProdutos';
+import rotaMaquinas from '../src/routes/maquinas';
+import rotaManutencaoMaquinas from '../src/routes/manutencaoMaquinas';
 
 const app = express();
 
@@ -50,6 +52,8 @@ app.use('/produtorProducao', rotaProdutosProducao);
 app.use('/estoque', rotaEstoqueMateriaPrima);
 app.use('/estoqueInsumos', rotaInsumosTecnicos);
 app.use('/tipoProdutos', rotaTipoProdutos);
+app.use('/maquinas', rotaMaquinas);
+app.use('/manutencoes', rotaManutencaoMaquinas);
 
 app.use((req: Request, res: Response, next: NextFunction) => {
   const erro = new Error('Rota não encontrado');

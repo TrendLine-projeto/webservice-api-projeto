@@ -303,6 +303,50 @@
                         }
                     }
                 }
+            },
+            "Manutencao": {
+                "type": "object",
+                "required": [
+                    "tipo",
+                    "idMaquina"
+                ],
+                "properties": {
+                    "tipo": {
+                        "type": "string",
+                        "example": "preventiva"
+                    },
+                    "data_execucao": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2025-01-15"
+                    },
+                    "proxima_prevista": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2025-06-15"
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "planejada"
+                    },
+                    "custo": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 1200.5
+                    },
+                    "responsavel": {
+                        "type": "string",
+                        "example": "Equipe Interna"
+                    },
+                    "observacoes": {
+                        "type": "string",
+                        "example": "Troca de rolamentos e lubrificação"
+                    },
+                    "idMaquina": {
+                        "type": "integer",
+                        "example": 3
+                    }
+                }
             }
         }
     },
@@ -5314,6 +5358,735 @@
                     },
                     "400": {
                         "description": "Erro nos dados enviados"
+                    }
+                }
+            }
+        },
+        "/maquinas": {
+            "post": {
+                "tags": [
+                    "Maquinas"
+                ],
+                "summary": "Criar máquina",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "codigo_interno",
+                                    "nome",
+                                    "numero_serie"
+                                ],
+                                "properties": {
+                                    "codigo_interno": {
+                                        "type": "string",
+                                        "example": "MAQ-001"
+                                    },
+                                    "nome": {
+                                        "type": "string",
+                                        "example": "Cortadora CNC X200"
+                                    },
+                                    "descricao": {
+                                        "type": "string",
+                                        "example": "Máquina principal da linha 1"
+                                    },
+                                    "tipo": {
+                                        "type": "string",
+                                        "example": "Corte"
+                                    },
+                                    "setor": {
+                                        "type": "string",
+                                        "example": "Produção"
+                                    },
+                                    "fabricante": {
+                                        "type": "string",
+                                        "example": "ACME"
+                                    },
+                                    "modelo": {
+                                        "type": "string",
+                                        "example": "X200"
+                                    },
+                                    "numero_serie": {
+                                        "type": "string",
+                                        "example": "SN-ABC-001"
+                                    },
+                                    "ano_fabricacao": {
+                                        "type": "integer",
+                                        "example": 2023
+                                    },
+                                    "capacidade_producao": {
+                                        "type": "string",
+                                        "example": "200 un/h"
+                                    },
+                                    "tensao": {
+                                        "type": "string",
+                                        "example": "380V"
+                                    },
+                                    "potencia_kw": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 7.5
+                                    },
+                                    "horimetro_atual": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 1532.7
+                                    },
+                                    "vida_util_estimada": {
+                                        "type": "integer",
+                                        "example": 10
+                                    },
+                                    "status": {
+                                        "type": "integer",
+                                        "example": 1,
+                                        "description": "1 = ativo, 0 = inativo"
+                                    },
+                                    "data_aquisicao": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2024-10-20"
+                                    },
+                                    "garantia_ate": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-10-20"
+                                    },
+                                    "localizacao": {
+                                        "type": "string",
+                                        "example": "Galpão A - Linha 1"
+                                    },
+                                    "proxima_manutencao": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2025-02-01"
+                                    },
+                                    "ultima_manutencao": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2024-11-15"
+                                    },
+                                    "mtbf": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 320.5
+                                    },
+                                    "mttr": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 4.2
+                                    },
+                                    "valor_aquisicao": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 125000.0
+                                    },
+                                    "custo_acumulado_manut": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 8400.0
+                                    },
+                                    "observacoes": {
+                                        "type": "string",
+                                        "example": "Operação estável; requer inspeção mensal."
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Máquina criada com sucesso."
+                    },
+                    "400": {
+                        "description": "Validação/entrada inválida."
+                    },
+                    "500": {
+                        "description": "Erro interno."
+                    }
+                }
+            },
+            "get": {
+                "tags": [
+                    "Maquinas"
+                ],
+                "summary": "Listar máquinas (paginação/filtros)",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "pagina",
+                        "schema": {
+                            "type": "integer",
+                            "default": 1
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "quantidadePorPagina",
+                        "schema": {
+                            "type": "integer",
+                            "default": 10
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "busca",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "ativo",
+                        "schema": {
+                            "type": "integer",
+                            "enum": [
+                                0,
+                                1
+                            ]
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "idFilial",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista paginada."
+                    },
+                    "500": {
+                        "description": "Erro interno."
+                    }
+                }
+            }
+        },
+        "/maquinas/{id}": {
+            "get": {
+                "tags": [
+                    "Maquinas"
+                ],
+                "summary": "Obter máquina por ID",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ok"
+                    },
+                    "404": {
+                        "description": "Não encontrada"
+                    },
+                    "500": {
+                        "description": "Erro interno"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Maquinas"
+                ],
+                "summary": "Atualizar máquina",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": [
+                                    "codigo_interno",
+                                    "nome",
+                                    "numero_serie"
+                                ],
+                                "properties": {
+                                    "codigo_interno": {
+                                        "type": "string",
+                                        "example": "MAQ-001"
+                                    },
+                                    "nome": {
+                                        "type": "string",
+                                        "example": "Cortadora CNC X200"
+                                    },
+                                    "descricao": {
+                                        "type": "string",
+                                        "example": "Máquina principal da linha 1"
+                                    },
+                                    "tipo": {
+                                        "type": "string",
+                                        "example": "Corte"
+                                    },
+                                    "setor": {
+                                        "type": "string",
+                                        "example": "Produção"
+                                    },
+                                    "fabricante": {
+                                        "type": "string",
+                                        "example": "ACME"
+                                    },
+                                    "modelo": {
+                                        "type": "string",
+                                        "example": "X200"
+                                    },
+                                    "numero_serie": {
+                                        "type": "string",
+                                        "example": "SN-ABC-001"
+                                    },
+                                    "ano_fabricacao": {
+                                        "type": "integer",
+                                        "example": 2023
+                                    },
+                                    "capacidade_producao": {
+                                        "type": "string",
+                                        "example": "200 un/h"
+                                    },
+                                    "tensao": {
+                                        "type": "string",
+                                        "example": "380V"
+                                    },
+                                    "potencia_kw": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 7.5
+                                    },
+                                    "horimetro_atual": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 1532.7
+                                    },
+                                    "vida_util_estimada": {
+                                        "type": "integer",
+                                        "example": 10
+                                    },
+                                    "status": {
+                                        "type": "integer",
+                                        "example": 1,
+                                        "description": "1 = ativo, 0 = inativo"
+                                    },
+                                    "data_aquisicao": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2024-10-20"
+                                    },
+                                    "garantia_ate": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-10-20"
+                                    },
+                                    "localizacao": {
+                                        "type": "string",
+                                        "example": "Galpão A - Linha 1"
+                                    },
+                                    "proxima_manutencao": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2025-02-01"
+                                    },
+                                    "ultima_manutencao": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2024-11-15"
+                                    },
+                                    "mtbf": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 320.5
+                                    },
+                                    "mttr": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 4.2
+                                    },
+                                    "valor_aquisicao": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 125000.0
+                                    },
+                                    "custo_acumulado_manut": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 8400.0
+                                    },
+                                    "observacoes": {
+                                        "type": "string",
+                                        "example": "Operação estável; requer inspeção mensal."
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Máquina atualizada com sucesso"
+                    },
+                    "400": {
+                        "description": "Validação/entrada inválida"
+                    },
+                    "404": {
+                        "description": "Não encontrada"
+                    },
+                    "500": {
+                        "description": "Erro interno"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Maquinas"
+                ],
+                "summary": "Remover máquina (soft delete)",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Removida"
+                    },
+                    "404": {
+                        "description": "Não encontrada"
+                    },
+                    "500": {
+                        "description": "Erro interno"
+                    }
+                }
+            },
+            "components": {
+                "schemas": {
+                    "Maquina": {
+                        "type": "object",
+                        "required": [
+                            "codigo_interno",
+                            "nome",
+                            "numero_serie"
+                        ],
+                        "properties": {
+                            "codigo_interno": {
+                                "type": "string",
+                                "example": "MAQ-001"
+                            },
+                            "nome": {
+                                "type": "string",
+                                "example": "Cortadora CNC X200"
+                            },
+                            "descricao": {
+                                "type": "string",
+                                "example": "Máquina principal da linha 1"
+                            },
+                            "tipo": {
+                                "type": "string",
+                                "example": "Corte"
+                            },
+                            "setor": {
+                                "type": "string",
+                                "example": "Produção"
+                            },
+                            "fabricante": {
+                                "type": "string",
+                                "example": "ACME"
+                            },
+                            "modelo": {
+                                "type": "string",
+                                "example": "X200"
+                            },
+                            "numero_serie": {
+                                "type": "string",
+                                "example": "SN-ABC-001"
+                            },
+                            "ano_fabricacao": {
+                                "type": "integer",
+                                "example": 2023
+                            },
+                            "capacidade_producao": {
+                                "type": "string",
+                                "example": "200 un/h"
+                            },
+                            "tensao": {
+                                "type": "string",
+                                "example": "380V"
+                            },
+                            "potencia_kw": {
+                                "type": "number",
+                                "format": "float",
+                                "example": 7.5
+                            },
+                            "horimetro_atual": {
+                                "type": "number",
+                                "format": "float",
+                                "example": 1532.7
+                            },
+                            "vida_util_estimada": {
+                                "type": "integer",
+                                "example": 10
+                            },
+                            "status": {
+                                "type": "integer",
+                                "example": 1,
+                                "description": "1 = ativo, 0 = inativo"
+                            },
+                            "data_aquisicao": {
+                                "type": "string",
+                                "format": "date",
+                                "example": "2024-10-20"
+                            },
+                            "garantia_ate": {
+                                "type": "string",
+                                "format": "date",
+                                "example": "2026-10-20"
+                            },
+                            "localizacao": {
+                                "type": "string",
+                                "example": "Galpão A - Linha 1"
+                            },
+                            "proxima_manutencao": {
+                                "type": "string",
+                                "format": "date",
+                                "example": "2025-02-01"
+                            },
+                            "ultima_manutencao": {
+                                "type": "string",
+                                "format": "date",
+                                "example": "2024-11-15"
+                            },
+                            "mtbf": {
+                                "type": "number",
+                                "format": "float",
+                                "example": 320.5
+                            },
+                            "mttr": {
+                                "type": "number",
+                                "format": "float",
+                                "example": 4.2
+                            },
+                            "valor_aquisicao": {
+                                "type": "number",
+                                "format": "float",
+                                "example": 125000.0
+                            },
+                            "custo_acumulado_manut": {
+                                "type": "number",
+                                "format": "float",
+                                "example": 8400.0
+                            },
+                            "observacoes": {
+                                "type": "string",
+                                "example": "Operação estável; requer inspeção mensal."
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/manutencoes": {
+            "post": {
+                "tags": [
+                    "Manutencoes"
+                ],
+                "summary": "Criar manutenção",
+                "description": "Cria uma manutenção e altera o status da máquina para 'manutencao'.",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Manutencao"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Criado"
+                    },
+                    "400": {
+                        "description": "Validação/entrada inválida"
+                    },
+                    "500": {
+                        "description": "Erro interno"
+                    }
+                }
+            },
+            "get": {
+                "tags": [
+                    "Manutencoes"
+                ],
+                "summary": "Listar manutenções",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "pagina",
+                        "schema": {
+                            "type": "integer",
+                            "default": 1
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "quantidadePorPagina",
+                        "schema": {
+                            "type": "integer",
+                            "default": 10
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "idMaquina",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "status",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "tipo",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "busca",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista paginada"
+                    },
+                    "500": {
+                        "description": "Erro interno"
+                    }
+                }
+            }
+        },
+        "/manutencoes/{id}": {
+            "get": {
+                "tags": [
+                    "Manutencoes"
+                ],
+                "summary": "Obter manutenção por ID",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ok"
+                    },
+                    "404": {
+                        "description": "Não encontrada"
+                    },
+                    "500": {
+                        "description": "Erro interno"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Manutencoes"
+                ],
+                "summary": "Atualizar manutenção",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Manutencao"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Atualizada"
+                    },
+                    "400": {
+                        "description": "Validação/entrada inválida"
+                    },
+                    "404": {
+                        "description": "Não encontrada"
+                    },
+                    "500": {
+                        "description": "Erro interno"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Manutencoes"
+                ],
+                "summary": "Excluir manutenção",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Removida"
+                    },
+                    "404": {
+                        "description": "Não encontrada"
+                    },
+                    "500": {
+                        "description": "Erro interno"
                     }
                 }
             }
