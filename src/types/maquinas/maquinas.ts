@@ -2,6 +2,7 @@
 import { RowDataPacket } from 'mysql2/promise';
 
 export interface MaquinaBase {
+  idCliente: number;
   codigo_interno: string;
   nome: string;
   descricao?: string | null;
@@ -44,6 +45,15 @@ export interface PaginacaoParams {
   setor?: string;
   tipo?: string;
   status?: string;
+  idCliente?: number | string;
+  fabricante?: string;
+  modelo?: string;
+  localizacao?: string;
+  ano_fabricacao_de?: number | string;
+  ano_fabricacao_ate?: number | string;
+  data_aquisicao_de?: string;
+  data_aquisicao_ate?: string;
+  proxima_manutencao_ate?: string;
 }
 
 export type DatasManutencaoBody = {

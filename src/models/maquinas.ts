@@ -4,7 +4,7 @@ import { PoolConnection, ResultSetHeader } from 'mysql2/promise';
 import { MaquinaBase, MaquinaRow, PaginacaoParams, Maquina, DatasManutencao  } from '../types/maquinas/maquinas';
 
 const colsInsert = `
-  codigo_interno, nome, descricao, tipo, setor, fabricante, modelo, numero_serie,
+  idCliente, codigo_interno, nome, descricao, tipo, setor, fabricante, modelo, numero_serie,
   ano_fabricacao, capacidade_producao, tensao, potencia_kw, horimetro_atual, vida_util_estimada,
   status, data_aquisicao, garantia_ate, localizacao, proxima_manutencao, ultima_manutencao,
   mtbf, mttr, valor_aquisicao, custo_acumulado_manut, observacoes, criado_em
@@ -16,10 +16,10 @@ export const inserir = async (m: MaquinaBase) => {
     const [result] = await conn.query<ResultSetHeader>(
       `
       INSERT INTO maquinas (${colsInsert})
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
       `,
       [
-        m.codigo_interno, m.nome, m.descricao ?? null, m.tipo ?? null, m.setor ?? null,
+        m.idCliente, m.codigo_interno, m.nome, m.descricao ?? null, m.tipo ?? null, m.setor ?? null,
         m.fabricante ?? null, m.modelo ?? null, m.numero_serie, m.ano_fabricacao ?? null,
         m.capacidade_producao ?? null, m.tensao ?? null, m.potencia_kw ?? null, m.horimetro_atual ?? null,
         m.vida_util_estimada ?? null, m.status ?? null, m.data_aquisicao ?? null, m.garantia_ate ?? null,
@@ -65,7 +65,7 @@ export const atualizar = async (id: number, m: MaquinaBase) => {
     const [result] = await conn.query<ResultSetHeader>(
       `
       UPDATE maquinas
-         SET codigo_interno = ?, nome = ?, descricao = ?, tipo = ?, setor = ?, fabricante = ?, modelo = ?,
+         SET idCliente = ?, codigo_interno = ?, nome = ?, descricao = ?, tipo = ?, setor = ?, fabricante = ?, modelo = ?,
              numero_serie = ?, ano_fabricacao = ?, capacidade_producao = ?, tensao = ?, potencia_kw = ?,
              horimetro_atual = ?, vida_util_estimada = ?, status = ?, data_aquisicao = ?, garantia_ate = ?,
              localizacao = ?, proxima_manutencao = ?, ultima_manutencao = ?, mtbf = ?, mttr = ?,
@@ -73,7 +73,7 @@ export const atualizar = async (id: number, m: MaquinaBase) => {
        WHERE id = ?
       `,
       [
-        m.codigo_interno, m.nome, m.descricao ?? null, m.tipo ?? null, m.setor ?? null, m.fabricante ?? null,
+        m.idCliente, m.codigo_interno, m.nome, m.descricao ?? null, m.tipo ?? null, m.setor ?? null, m.fabricante ?? null,
         m.modelo ?? null, m.numero_serie, m.ano_fabricacao ?? null, m.capacidade_producao ?? null,
         m.tensao ?? null, m.potencia_kw ?? null, m.horimetro_atual ?? null, m.vida_util_estimada ?? null,
         m.status ?? null, m.data_aquisicao ?? null, m.garantia_ate ?? null, m.localizacao ?? null,
@@ -100,6 +100,18 @@ export const remover = async (id: number) => {
   }
 };
 
+const parseIsoDate = (value?: string | null) => {
+  if (!value || typeof value !== 'string') return null;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
+  const d = new Date(value);
+  return isNaN(d.getTime()) ? null : value;
+};
+
+const parseNumber = (value?: string | number) => {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : null;
+};
+
 export const listar = async (p: PaginacaoParams) => {
   const pagina = Math.max(Number(p.pagina ?? 1), 1);
   const limit = Math.max(Number(p.quantidadePorPagina ?? 10), 1);
@@ -113,9 +125,26 @@ export const listar = async (p: PaginacaoParams) => {
     const like = `%${p.busca}%`;
     params.push(like, like, like, like);
   }
+  if (p.idCliente) { filtros.push(`idCliente = ?`); params.push(Number(p.idCliente)); }
   if (p.setor) { filtros.push(`setor = ?`); params.push(p.setor); }
   if (p.tipo) { filtros.push(`tipo = ?`); params.push(p.tipo); }
   if (p.status) { filtros.push(`status = ?`); params.push(p.status); }
+  if (p.fabricante) { filtros.push(`fabricante = ?`); params.push(p.fabricante); }
+  if (p.modelo) { filtros.push(`modelo = ?`); params.push(p.modelo); }
+  if (p.localizacao) { filtros.push(`localizacao = ?`); params.push(p.localizacao); }
+
+  const anoDe = parseNumber(p.ano_fabricacao_de);
+  if (anoDe !== null) { filtros.push(`ano_fabricacao >= ?`); params.push(anoDe); }
+  const anoAte = parseNumber(p.ano_fabricacao_ate);
+  if (anoAte !== null) { filtros.push(`ano_fabricacao <= ?`); params.push(anoAte); }
+
+  const dataAquisicaoDe = parseIsoDate(p.data_aquisicao_de);
+  if (dataAquisicaoDe) { filtros.push(`data_aquisicao >= ?`); params.push(dataAquisicaoDe); }
+  const dataAquisicaoAte = parseIsoDate(p.data_aquisicao_ate);
+  if (dataAquisicaoAte) { filtros.push(`data_aquisicao <= ?`); params.push(dataAquisicaoAte); }
+
+  const proximaManutencaoAte = parseIsoDate(p.proxima_manutencao_ate);
+  if (proximaManutencaoAte) { filtros.push(`proxima_manutencao <= ?`); params.push(proximaManutencaoAte); }
 
   const where = filtros.length ? `WHERE ${filtros.join(' AND ')}` : '';
 

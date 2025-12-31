@@ -9,10 +9,11 @@ export const inserir = async (m: ManutencaoBase) => {
     const [result] = await conn.query<ResultSetHeader>(
       `
       INSERT INTO manutencao_maquinas (
-        tipo, data_execucao, proxima_prevista, status, custo, responsavel, observacoes, idMaquina
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        idCliente, tipo, data_execucao, proxima_prevista, status, custo, responsavel, observacoes, idMaquina
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
       `,
       [
+        m.idCliente,
         m.tipo,
         m.data_execucao ?? null,
         m.proxima_prevista ?? null,
@@ -48,11 +49,12 @@ export const atualizar = async (id: number, m: ManutencaoBase) => {
     const [result] = await conn.query<ResultSetHeader>(
       `
       UPDATE manutencao_maquinas
-         SET tipo = ?, data_execucao = ?, proxima_prevista = ?, status = ?,
+         SET idCliente = ?, tipo = ?, data_execucao = ?, proxima_prevista = ?, status = ?,
              custo = ?, responsavel = ?, observacoes = ?, idMaquina = ?
        WHERE id = ?
       `,
       [
+        m.idCliente,
         m.tipo,
         m.data_execucao ?? null,
         m.proxima_prevista ?? null,
@@ -91,6 +93,7 @@ export const listar = async (p: PaginacaoParams) => {
   const filtros: string[] = [];
   const params: any[] = [];
 
+  if (p.idCliente) { filtros.push(`idCliente = ?`); params.push(Number(p.idCliente)); }
   if (p.idMaquina) { filtros.push(`idMaquina = ?`); params.push(Number(p.idMaquina)); }
   if (p.status) { filtros.push(`status = ?`); params.push(p.status); }
   if (p.tipo) { filtros.push(`tipo = ?`); params.push(p.tipo); }

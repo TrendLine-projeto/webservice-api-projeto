@@ -2,7 +2,7 @@ import express, { Request, Response, NextFunction } from 'express';
 import morgan from 'morgan';
 import cors from 'cors';
 import swaggerUi from 'swagger-ui-express';
-import swaggerDocument from './swagger.json';
+import swaggerSpecs from './config/swagger';
 
 import rotaUsuarios from '../src/routes/usuarios';
 import rotaFornecedorSupri from '../src/routes/fornecedorSupri';
@@ -15,6 +15,8 @@ import rotaInsumosTecnicos from '../src/routes/estoqueInsumos';
 import rotaTipoProdutos from '../src/routes/tipoProdutos';
 import rotaMaquinas from '../src/routes/maquinas';
 import rotaManutencaoMaquinas from '../src/routes/manutencaoMaquinas';
+import rotaOrdensServico from '../src/routes/ordensServico';
+import rotaNotificacoes from '../src/routes/notificacoes';
 
 const app = express();
 
@@ -41,7 +43,27 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   next();
 });
 
-app.use('/swagger', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+app.use(
+  '/swagger',
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerSpecs, {
+    swaggerOptions: {
+      authAction: {
+        bearerAuth: {
+          name: 'bearerAuth',
+          schema: {
+            type: 'http',
+            in: 'header',
+            name: 'Authorization',
+            scheme: 'bearer',
+            bearerFormat: 'JWT',
+          },
+          value: 'Bearer ',
+        },
+      },
+    },
+  })
+);
 
 app.use('/usuarios', rotaUsuarios);
 app.use('/fornecedorSupri', rotaFornecedorSupri);
@@ -54,6 +76,8 @@ app.use('/estoqueInsumos', rotaInsumosTecnicos);
 app.use('/tipoProdutos', rotaTipoProdutos);
 app.use('/maquinas', rotaMaquinas);
 app.use('/manutencoes', rotaManutencaoMaquinas);
+app.use('/ordensServico', rotaOrdensServico);
+app.use('/notificacoes', rotaNotificacoes);
 
 app.use((req: Request, res: Response, next: NextFunction) => {
   const erro = new Error('Rota não encontrado');

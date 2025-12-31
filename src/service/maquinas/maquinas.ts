@@ -1,6 +1,6 @@
 // src/service/maquinas/maquinasBase.ts
 import * as MaquinasModel from '../../models/maquinas';
-import { MaquinaBase, PaginacaoParams, DatasManutencao } from '../../types/maquinas/maquinas';
+import { MaquinaBase, PaginacaoParams } from '../../types/maquinas/maquinas';
 
 const assertStr = (v: any, nome: string) => {
   if (!v || typeof v !== 'string' || v.trim() === '') {
@@ -8,14 +8,15 @@ const assertStr = (v: any, nome: string) => {
   }
 };
 
-const isValidDateStr = (s?: string | null) => {
-  if (s === undefined || s === null) return true; // permitido ausente/nulo (significa não atualizar ou limpar)
-  // aceita 'YYYY-MM-DD'
-  const d = new Date(s as string);
-  return !isNaN(d.getTime()) && /^\d{4}-\d{2}-\d{2}$/.test(String(s));
+const assertNum = (v: any, nome: string) => {
+  const n = Number(v);
+  if (!Number.isFinite(n) || n <= 0) {
+    throw { tipo: 'Validacao', mensagem: `Campo ${nome} deve ser numérico e maior que zero` };
+  }
 };
 
 export const criar = async (m: MaquinaBase) => {
+  assertNum(m.idCliente, 'idCliente');
   assertStr(m.codigo_interno, 'codigo_interno');
   assertStr(m.nome, 'nome');
   assertStr(m.numero_serie, 'numero_serie');
@@ -35,6 +36,7 @@ export const obter = async (id: number) => {
 };
 
 export const atualizar = async (id: number, m: MaquinaBase) => {
+  assertNum(m.idCliente, 'idCliente');
   assertStr(m.codigo_interno, 'codigo_interno');
   assertStr(m.nome, 'nome');
   assertStr(m.numero_serie, 'numero_serie');

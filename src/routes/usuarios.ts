@@ -6,15 +6,112 @@ import jwt from 'jsonwebtoken';
 import * as login from '../middleware/login';
 import dotenv from 'dotenv';
 
+/**
+ * @swagger
+ * tags:
+ *   name: Usuarios
+ *   description: Cadastro, autenticacao e validacao de tokens.
+ * components:
+ *   schemas:
+ *     UsuarioCadastroInput:
+ *       type: object
+ *       required:
+ *         - username
+ *         - senha
+ *         - email
+ *       properties:
+ *         username:
+ *           type: string
+ *         senha:
+ *           type: string
+ *           format: password
+ *         email:
+ *           type: string
+ *           format: email
+ *     UsuarioLoginInput:
+ *       type: object
+ *       required:
+ *         - username
+ *         - senha
+ *       properties:
+ *         username:
+ *           type: string
+ *         senha:
+ *           type: string
+ *           format: password
+ *     UsuarioAuthResponse:
+ *       type: object
+ *       properties:
+ *         mensagem:
+ *           type: string
+ *         token:
+ *           type: string
+ *         usuario:
+ *           type: object
+ *           additionalProperties: true
+ *     FavoritoInput:
+ *       type: object
+ *       required:
+ *         - url
+ *       properties:
+ *         url:
+ *           type: string
+ *     Favorito:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: integer
+ *         url:
+ *           type: string
+ *         idUsuario:
+ *           type: integer
+ */
+
 dotenv.config();
 
 const router = Router();
 
+/**
+ * @swagger
+ * /usuarios/protected:
+ *   get:
+ *     summary: Testa se o token informado e valido.
+ *     tags: [Usuarios]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Token valido.
+ *       401:
+ *         description: Token ausente ou invalido.
+ */
 router.get('/protected', login.verifyToken, (req: Request, res: Response) => {
   const email = req.body.email;
   res.json({ message: 'Rota protegida', email });
 });
 
+/**
+ * @swagger
+ * /usuarios/cadastro:
+ *   post:
+ *     summary: Cria um novo usuario (administradores).
+ *     tags: [Usuarios]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/UsuarioCadastroInput'
+ *     responses:
+ *       201:
+ *         description: Usuario criado.
+ *       409:
+ *         description: Username ja existe.
+ *       401:
+ *         description: Token ausente ou invalido.
+ */
 router.post('/cadastro', login.obrigatorio, async (req: Request, res: Response) => {
   try {
     const conn = await pool.getConnection();
@@ -47,6 +144,28 @@ router.post('/cadastro', login.obrigatorio, async (req: Request, res: Response) 
   }
 });
 
+/**
+ * @swagger
+ * /usuarios/login:
+ *   post:
+ *     summary: Autentica um usuario e retorna token JWT.
+ *     tags: [Usuarios]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/UsuarioLoginInput'
+ *     responses:
+ *       200:
+ *         description: Login realizado.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/UsuarioAuthResponse'
+ *       401:
+ *         description: Usuario ou senha invalidos.
+ */
 router.post('/login', async (req: Request, res: Response) => {
   try {
     const conn = await pool.getConnection();
@@ -87,6 +206,12 @@ router.post('/login', async (req: Request, res: Response) => {
       WHERE m.idNivelUsuario = ?
     `, [user.idNivelUsuario]);
 
+    const [favoritos] = await conn.query(`
+      SELECT id, url, idUsuario
+      FROM favoritos
+      WHERE idUsuario = ?
+    `, [user.id]);
+
     conn.release();
 
     const menusMap = new Map<number, any>();
@@ -110,6 +235,12 @@ router.post('/login', async (req: Request, res: Response) => {
     });
 
     const menus = Array.from(menusMap.values());
+    const favoritosList = (favoritos as any[]).map(f => ({
+      id: f.id,
+      url: f.url,
+      idUsuario: f.idUsuario
+    }));
+
     const token = jwt.sign({
       id: user.id,
       username: user.username,
@@ -132,7 +263,8 @@ router.post('/login', async (req: Request, res: Response) => {
           cnpj: user.cnpj,
           filiais
         },
-        menus
+        menus,
+        favoritos: favoritosList
       }
     });
   } catch (error) {
@@ -140,6 +272,111 @@ router.post('/login', async (req: Request, res: Response) => {
   }
 });
 
+/**
+ * @swagger
+ * /usuarios/favoritos:
+ *   post:
+ *     summary: Cria um novo favorito para o usuario autenticado.
+ *     tags: [Usuarios]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/FavoritoInput'
+ *     responses:
+ *       201:
+ *         description: Favorito criado.
+ *       400:
+ *         description: Dados invalidos.
+ */
+router.post('/favoritos', login.obrigatorio, async (req: Request & { usuario?: any }, res: Response) => {
+  try {
+    const { url } = req.body;
+    const idUsuario = req.usuario?.id;
+
+    if (!url) {
+      return res.status(400).send({ mensagem: 'URL do favorito e obrigatoria.' });
+    }
+
+    const conn = await pool.getConnection();
+    const [insertResult] = await conn.query(
+      'INSERT INTO favoritos (url, idUsuario) VALUES (?, ?)',
+      [url, idUsuario]
+    );
+    conn.release();
+
+    res.status(201).send({
+      mensagem: 'Favorito criado com sucesso!',
+      favorito: {
+        id: (insertResult as any).insertId,
+        url,
+        idUsuario
+      }
+    });
+  } catch (error) {
+    return res.status(500).send({ error });
+  }
+});
+
+/**
+ * @swagger
+ * /usuarios/favoritos/{id}:
+ *   delete:
+ *     summary: Remove um favorito do usuario autenticado.
+ *     tags: [Usuarios]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Favorito removido.
+ *       404:
+ *         description: Favorito nao encontrado.
+ */
+router.delete('/favoritos/:id', login.obrigatorio, async (req: Request & { usuario?: any }, res: Response) => {
+  try {
+    const { id } = req.params;
+    const idUsuario = req.usuario?.id;
+
+    const conn = await pool.getConnection();
+    const [deleteResult] = await conn.query(
+      'DELETE FROM favoritos WHERE id = ? AND idUsuario = ?',
+      [id, idUsuario]
+    );
+    conn.release();
+
+    if ((deleteResult as any).affectedRows === 0) {
+      return res.status(404).send({ mensagem: 'Favorito nao encontrado.' });
+    }
+
+    res.status(200).send({ mensagem: 'Favorito removido com sucesso.' });
+  } catch (error) {
+    return res.status(500).send({ error });
+  }
+});
+
+/**
+ * @swagger
+ * /usuarios/validartoken:
+ *   get:
+ *     summary: Valida o token e retorna os dados do usuario logado.
+ *     tags: [Usuarios]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Token valido e dados retornados.
+ *       401:
+ *         description: Token ausente ou invalido.
+ */
 router.get('/validartoken', login.obrigatorio, async (req: any, res: Response) => {
   try {
     const conn = await pool.getConnection();
