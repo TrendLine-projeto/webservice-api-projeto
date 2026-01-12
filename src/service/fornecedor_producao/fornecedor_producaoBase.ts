@@ -1,4 +1,20 @@
-import * as FornecedorProducaoModel from '../../models/fornecedorProducao';
+﻿import * as FornecedorProducaoModel from '../../models/fornecedorProducao';
+import * as NotificacoesService from '../notificacoes/notificacoes';
+
+const criarNotificacaoFornecedorProducao = async (
+    acao: 'Criacao' | 'Alteracao',
+    payload: { idCliente?: number; razaoSocial?: string },
+    idFornecedor?: number
+) => {
+    if (!payload?.idCliente) return;
+    const nome = payload.razaoSocial || (idFornecedor ? `fornecedor ${idFornecedor}` : 'fornecedor');
+    await NotificacoesService.criar({
+        descricao: `${acao} de fornecedor de producao: ${nome}`,
+        url: '/fornecedoresprodutos',
+        tipo: acao,
+        idCliente: Number(payload.idCliente)
+    });
+};
 
 export const buscarFornecedorPorId = async (id: number) => {
     const { fornecedoresResult } = await FornecedorProducaoModel.buscarFornecedorPorId(id);
@@ -11,7 +27,7 @@ export const buscarFornecedorPorId = async (id: number) => {
 
 export const criarFornecedor = async (fornecedor: any) => {
     if (!fornecedor.razaoSocial || !fornecedor.cnpj || !fornecedor.cliente_id) {
-        throw { tipo: 'Validacao', mensagem: 'Razão Social, CNPJ e Cliente ID são obrigatórios.' };
+        throw { tipo: 'Validacao', mensagem: 'RazÃ£o Social, CNPJ e Cliente ID sÃ£o obrigatÃ³rios.' };
     }
 
     const clienteExiste = await FornecedorProducaoModel.verificarClientePorId(fornecedor.cliente_id);
@@ -21,6 +37,10 @@ export const criarFornecedor = async (fornecedor: any) => {
     }
 
     const resultado = await FornecedorProducaoModel.inserirFornecedor(fornecedor);
+    await criarNotificacaoFornecedorProducao('Criacao', {
+        idCliente: fornecedor.cliente_id,
+        razaoSocial: fornecedor.razaoSocial
+    }, resultado.insertId);
 
     return {
         id: resultado.insertId,
@@ -41,7 +61,7 @@ export const buscarFornecedoresPorCliente = async (filtros: any) => {
     } = filtros;
 
     if (!cliente_id) {
-        throw { tipo: 'Validacao', mensagem: 'Cliente ID é obrigatório.' };
+        throw { tipo: 'Validacao', mensagem: 'Cliente ID Ã© obrigatÃ³rio.' };
     }
 
     const totalRegistros = await FornecedorProducaoModel.buscarTotalDeFornecedores({
@@ -83,7 +103,7 @@ export const buscarFornecedoresPorCliente = async (filtros: any) => {
 
 export const buscarFornecedoresSimplesPorCliente = async ({ cliente_id }: { cliente_id: number }) => {
     if (!cliente_id) {
-        throw { tipo: 'Validacao', mensagem: 'Cliente ID é obrigatório.' };
+        throw { tipo: 'Validacao', mensagem: 'Cliente ID Ã© obrigatÃ³rio.' };
     }
 
     const fornecedores = await FornecedorProducaoModel.buscarFornecedoresSimplesPorCliente(cliente_id);
@@ -91,17 +111,27 @@ export const buscarFornecedoresSimplesPorCliente = async ({ cliente_id }: { clie
 };
 
 export const deletarFornecedor = async (id: number): Promise<{ success: boolean; mensagem: string }> => {
+    const existente = await FornecedorProducaoModel.buscarFornecedorPorId(id);
     const { sucesso, linhasAfetadas } = await FornecedorProducaoModel.deletarFornecedor(id);
 
     if (!sucesso || linhasAfetadas === 0) {
         return {
             success: false,
-            mensagem: 'Fornecedor não encontrado ou já excluído.'
+            mensagem: 'Fornecedor nÇœo encontrado ou jÇ­ excluÇðdo.'
         };
+    }
+
+    const fornecedor = existente.fornecedoresResult?.[0];
+    if (fornecedor) {
+        await criarNotificacaoFornecedorProducao('Alteracao', {
+            idCliente: fornecedor.cliente_id,
+            razaoSocial: fornecedor.razaoSocial
+        }, id);
     }
 
     return {
         success: true,
-        mensagem: 'Fornecedor excluído com sucesso!'
+        mensagem: 'Fornecedor excluÇðdo com sucesso!'
     };
 };
+

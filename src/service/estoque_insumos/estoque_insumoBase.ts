@@ -1,4 +1,20 @@
 import * as EstoqueInsumosModel from '../../models/estoqueInsumos';
+import * as NotificacoesService from '../notificacoes/notificacoes';
+
+const criarNotificacaoInsumo = async (
+  acao: 'Criacao' | 'Edicao' | 'Alteracao',
+  payload: { idCliente?: number; nome?: string },
+  idInsumo?: number
+) => {
+  if (!payload?.idCliente) return;
+  const nome = payload.nome || (idInsumo ? `insumo ${idInsumo}` : 'insumo');
+  await NotificacoesService.criar({
+    descricao: `${acao} de insumo tecnico: ${nome}`,
+    url: '/suprimentos/insumostecnicos',
+    tipo: acao,
+    idCliente: Number(payload.idCliente)
+  });
+};
 
 export const estoqueInsumosPorId = async (id: number) => {
     const { insumoTecnico } = await EstoqueInsumosModel.estoqueInsumosPorId(id);
@@ -21,6 +37,10 @@ export const criarInsumo = async (insumoTecnico: any) => {
     }
 
     const resultado = await EstoqueInsumosModel.inserirInsumoTecnico(insumoTecnico);
+    await criarNotificacaoInsumo('Criacao', {
+      idCliente: insumoTecnico.idCliente,
+      nome: insumoTecnico.nome
+    }, resultado.insertId);
 
     return {
         id: resultado.insertId,
@@ -84,7 +104,14 @@ export const buscarInsumoPorFornecedorComFiltros = async (filtros: any) => {
 };
 
 export const excluirPorId = async (id: number): Promise<boolean> => {
+  const existente = await EstoqueInsumosModel.buscarPorId(id);
   const resultado = await EstoqueInsumosModel.excluirPorId(id);
+  if (resultado.affectedRows > 0 && existente) {
+    await criarNotificacaoInsumo('Alteracao', {
+      idCliente: existente.idCliente,
+      nome: existente.nome
+    }, id);
+  }
   return resultado.affectedRows > 0;
 };
 
@@ -98,7 +125,14 @@ export const atualizar = async (id: number, dados: any): Promise<boolean> => {
   // Remover campos não permitidos ou adicionar campos obrigatórios
   dados.atualizadoEm = new Date();
 
-  return await EstoqueInsumosModel.atualizar(id, dados);
+  const ok = await EstoqueInsumosModel.atualizar(id, dados);
+  if (ok) {
+    await criarNotificacaoInsumo('Edicao', {
+      idCliente: existente.idCliente,
+      nome: dados.nome ?? existente.nome
+    }, id);
+  }
+  return ok;
 };
 
 export const buscarPorFornecedor = async (idFornecedor_suprimentos: number) => {

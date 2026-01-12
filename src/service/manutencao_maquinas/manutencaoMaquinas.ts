@@ -1,4 +1,4 @@
-// src/service/manutencoes/manutencoesBase.ts
+﻿// src/service/manutencoes/manutencoesBase.ts
 import * as ManutencoesModel from '../../models/manutencaoMaquinas';
 import * as MaquinasModel from '../../models/maquinas';
 import * as OrdensServicoService from '../ordens_servico/ordensServico';
@@ -29,6 +29,22 @@ const isValidDate = (s?: string | null) => {
   return !isNaN(d.getTime()) && /^\d{4}-\d{2}-\d{2}$/.test(String(s));
 };
 
+const criarNotificacaoManutencao = async (
+  acao: 'Criacao' | 'Edicao' | 'Alteracao',
+  payload: { idCliente?: number; nomeMaquina?: string; idMaquina?: number },
+  idManutencao?: number
+) => {
+  if (!payload?.idCliente) return;
+  const alvo = payload.nomeMaquina
+    || (payload.idMaquina ? `maquina ${payload.idMaquina}` : (idManutencao ? `manutencao ${idManutencao}` : 'manutencao'));
+  await NotificacoesService.criar({
+    descricao: `${acao} de manutencao: ${alvo}`,
+    url: '/ativos/planomanutencao',
+    tipo: acao,
+    idCliente: Number(payload.idCliente)
+  });
+};
+
 export const criar = async (m: ManutencaoBase) => {
   assertNum(m.idCliente, 'idCliente');
   const maquina = await MaquinasModel.buscarPorId(m.idMaquina);
@@ -54,7 +70,11 @@ export const criar = async (m: ManutencaoBase) => {
 
     try {
       await criarOrdemServicoAutomatico(maquina.nome ?? '', idClienteMaquina);
-      await criarNotificacaoAutomatico(maquina.nome ?? '', idClienteMaquina, result.insertId);
+      await criarNotificacaoManutencao('Criacao', {
+        idCliente: idClienteMaquina,
+        nomeMaquina: maquina.nome ?? undefined,
+        idMaquina: m.idMaquina
+      }, result.insertId);
     } catch (ordemErr) {
       // tenta desfazer a manutencao para nao deixar inconsistente
       await ManutencoesModel.remover(result.insertId).catch(() => {});
@@ -84,7 +104,8 @@ export const atualizar = async (id: number, m: ManutencaoBase) => {
   assertStr(m.tipo, 'tipo');
   assertNum(m.idCliente, 'idCliente');
   if (!m.idMaquina) throw { tipo: 'Validacao', mensagem: 'idMaquina e obrigatorio' };
-  if (!await MaquinasModel.buscarPorId(m.idMaquina)) {
+  const maquina = await MaquinasModel.buscarPorId(m.idMaquina);
+  if (!maquina) {
     throw { tipo: 'Validacao', mensagem: 'Maquina (idMaquina) nao encontrada' };
   }
   if (!isValidDate(m.data_execucao)) {
@@ -105,12 +126,23 @@ export const atualizar = async (id: number, m: ManutencaoBase) => {
 
   const ok = await ManutencoesModel.atualizar(id, m);
   if (!ok) throw { tipo: 'NaoEncontrado', mensagem: 'Manutencao nao encontrada' };
+  await criarNotificacaoManutencao('Edicao', {
+    idCliente: m.idCliente,
+    nomeMaquina: maquina.nome ?? undefined,
+    idMaquina: m.idMaquina
+  }, id);
   return ManutencoesModel.buscarPorId(id);
 };
 
 export const remover = async (id: number) => {
+  const existente = await ManutencoesModel.buscarPorId(id);
+  if (!existente) throw { tipo: 'NaoEncontrado', mensagem: 'Manutencao nao encontrada' };
   const ok = await ManutencoesModel.remover(id);
   if (!ok) throw { tipo: 'NaoEncontrado', mensagem: 'Manutencao nao encontrada' };
+  await criarNotificacaoManutencao('Alteracao', {
+    idCliente: existente.idCliente,
+    idMaquina: existente.idMaquina
+  }, id);
   return { id, removido: true };
 };
 
@@ -126,6 +158,11 @@ export const fechar = async (idManutencao: number) => {
 
   // 3) define a maquina como ativa (ENUM: 'ativa')
   await MaquinasModel.atualizarStatusApenas(manutencao.idMaquina, STATUS_MAQUINA_ATIVA);
+
+  await criarNotificacaoManutencao('Alteracao', {
+    idCliente: manutencao.idCliente,
+    idMaquina: manutencao.idMaquina
+  }, idManutencao);
 
   // 4) retorna a manutencao atualizada
   const atualizado = await ManutencoesModel.buscarPorId(idManutencao);
@@ -170,11 +207,13 @@ const criarOrdemServicoAutomatico = async (nomeMaquina: string, idCliente: numbe
 const criarNotificacaoAutomatico = async (nomeMaquina: string, idCliente: number, idManutencao: number) => {
   const tituloMaquina = nomeMaquina || `maquina ${idManutencao}`;
   return NotificacoesService.criar({
-    descricao: `Nova Manutenção criada para ${tituloMaquina}`,
+    descricao: `Nova ManutenÇõÇœo criada para ${tituloMaquina}`,
     url: `/manutencoes/${idManutencao}`,
-    tipo: 'Manutenção',
+    tipo: 'ManutenÇõÇœo',
     dataCriacao: new Date(),
     idCliente,
   });
 };
+
+
 

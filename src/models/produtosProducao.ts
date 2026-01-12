@@ -12,6 +12,19 @@ export const verificarLotePorId = async (idLote: number): Promise<boolean> => {
   }
 };
 
+export const buscarClientePorFilialId = async (idFilial: number): Promise<number | null> => {
+  const conn: PoolConnection = await pool.getConnection();
+  try {
+    const [rows] = await conn.query<any[]>(
+      'SELECT idCliente FROM filiais WHERE id = ? LIMIT 1',
+      [idFilial]
+    );
+    return rows?.[0]?.idCliente ?? null;
+  } finally {
+    conn.release();
+  }
+};
+
 export const inserirProduto = async (produto: ProdutoProducao): Promise<any> => {
   const conn: PoolConnection = await pool.getConnection();
   try {

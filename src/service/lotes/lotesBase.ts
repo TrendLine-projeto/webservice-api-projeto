@@ -3,6 +3,7 @@ import * as notaModel from '../../models/notaFiscal';
 import * as produtoModel from '../../models/produtosProducao';
 import * as fornecedorModel from '../../models/fornecedorProducao'
 import * as notasFiscais from '../../models/notaFiscal';
+import * as lotesFechamentoModel from '../../models/lotesFechamento';
 import { EntradaDeLote } from '../../types/lotes/EntradaDeLote';
 import { LotePut } from '../../types/lotes/AlterarLote';
 import { NotaFiscal } from '../../types/notasFiscais/notaFiscal';
@@ -67,12 +68,14 @@ export const buscarLotesPorCliente = async (filtros: any) => {
   const notasPorLote = await notaModel.buscarNotasPorLoteIds(loteIds);
   const produtosPorLote = await produtoModel.buscarProdutosPorLoteIds(loteIds);
   const fornecedoresPorId = await fornecedorModel.buscarFornecedoresPorIds(fornecedorIds);
+  const fechamentosPorLote = await lotesFechamentoModel.buscarPorEntradaLoteIds(loteIds);
 
   const lotesComDados = resultado.lotes.map((lote: any) => ({
     ...lote,
     fornecedor: fornecedoresPorId[lote.idFornecedor_producao] || null,
     notasFiscais: notasPorLote[lote.id] || [],
-    produtos: produtosPorLote[lote.id] || []
+    produtos: produtosPorLote[lote.id] || [],
+    fechamento: fechamentosPorLote[lote.id] || null
   }));
 
   return {
@@ -120,12 +123,14 @@ export const buscarLotePorId = async (idLote: number) => {
     produtoModel.buscarProdutosPorLoteIds([lote.id]),
     fornecedorModel.buscarFornecedoresPorIds([lote.idFornecedor_producao])
   ]);
+  const fechamento = await lotesFechamentoModel.buscarPorEntradaLoteId(lote.id);
 
   return {
     ...lote,
     notasFiscais: notas[lote.id] || [],
     produtos: produtos[lote.id] || [],
-    fornecedor: fornecedor[lote.idFornecedor_producao] || null
+    fornecedor: fornecedor[lote.idFornecedor_producao] || null,
+    fechamento
   };
 };
 

@@ -2,6 +2,7 @@ import * as ProdutosSupriModel from '../../models/produtosProducao';
 import { ProdutoProducao } from '../../types/ProdutoProducao/ProdutoProducao';
 import { createBlingProduct } from '../../integration/bling/produtos/produtos.api';
 import { mapProdutoToBlingPayload }from '../../integration/bling/produtos/bling-product.dto'
+import * as NotificacoesService from '../notificacoes/notificacoes';
 
 const toMySQLDateTime = (val: any, fieldName: string) => {
   if (val === null || val === undefined || val === '') return null;
@@ -19,6 +20,28 @@ const toNumberOrNull = (val: any) => {
   return isNaN(n) ? null : n;
 };
 
+const buscarIdClientePorFilial = async (idFilial?: number | null) => {
+  if (!idFilial) return null;
+  const idCliente = await ProdutosSupriModel.buscarClientePorFilialId(Number(idFilial));
+  const n = Number(idCliente);
+  return Number.isFinite(n) && n > 0 ? n : null;
+};
+
+const criarNotificacaoProdutoProducao = async (
+  acao: 'Criacao' | 'Edicao' | 'Alteracao',
+  payload: { idCliente?: number | null; nomeProduto?: string },
+  idProduto?: number
+) => {
+  if (!payload?.idCliente) return;
+  const nome = payload.nomeProduto || (idProduto ? `produto ${idProduto}` : 'produto');
+  await NotificacoesService.criar({
+    descricao: `${acao} de produto de producao: ${nome}`,
+    url: '/lotes/lotesacompanhamento',
+    tipo: acao,
+    idCliente: Number(payload.idCliente)
+  });
+};
+
 export const criarProduto = async (entradaProduto: ProdutoProducao) => {
   if (!entradaProduto.idEntrada_lotes) {
     throw { tipo: 'Validacao', mensagem: 'Identificação do lote principal é obrigatória' };
@@ -31,6 +54,11 @@ export const criarProduto = async (entradaProduto: ProdutoProducao) => {
 
   const resultado = await ProdutosSupriModel.inserirProduto(entradaProduto);
   const produtoLocalId = resultado.insertId;
+  const idCliente = await buscarIdClientePorFilial(entradaProduto.idFilial);
+  await criarNotificacaoProdutoProducao('Criacao', {
+    idCliente,
+    nomeProduto: entradaProduto.nomeProduto
+  }, produtoLocalId);
   const payloadBling = mapProdutoToBlingPayload(entradaProduto, produtoLocalId);
 
   try {
@@ -143,6 +171,13 @@ export const atualizarProdutoPorId = async (id: number, body: ProdutoProducao) =
   }
 
   await ProdutosSupriModel.atualizarProdutoPorId(id, normalizado);
+  const idCliente = await buscarIdClientePorFilial(
+    (normalizado.idFilial ?? existente.idFilial) as number | null
+  );
+  await criarNotificacaoProdutoProducao('Edicao', {
+    idCliente,
+    nomeProduto: normalizado.nomeProduto ?? existente.nomeProduto
+  }, id);
   return await ProdutosSupriModel.buscarProdutoPorId(id);
 };
 
@@ -154,6 +189,11 @@ export const deletarProdutoPorId = async (id: number): Promise<boolean> => {
     }
 
     await ProdutosSupriModel.deletarPorId(id);
+    const idCliente = await buscarIdClientePorFilial(produto.idFilial);
+    await criarNotificacaoProdutoProducao('Alteracao', {
+      idCliente,
+      nomeProduto: produto.nomeProduto
+    }, id);
     return true;
 };
 

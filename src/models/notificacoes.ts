@@ -9,10 +9,10 @@ export const inserir = async (n: NotificacaoBase) => {
   try {
     const [result] = await conn.query<ResultSetHeader>(
       `
-      INSERT INTO ${TABLE} (descricao, url, tipo, dataCriacao, idCliente)
-      VALUES (?, ?, ?, ?, ?)
+      INSERT INTO ${TABLE} (descricao, url, tipo, dataCriacao, idCliente, lido)
+      VALUES (?, ?, ?, ?, ?, ?)
       `,
-      [n.descricao, n.url, n.tipo, n.dataCriacao ?? new Date(), n.idCliente]
+      [n.descricao, n.url, n.tipo, n.dataCriacao ?? new Date(), n.idCliente, n.lido ?? 0]
     );
     return result;
   } finally {
@@ -39,10 +39,10 @@ export const atualizar = async (id: number, n: NotificacaoBase) => {
     const [result] = await conn.query<ResultSetHeader>(
       `
       UPDATE ${TABLE}
-         SET descricao = ?, url = ?, tipo = ?, dataCriacao = ?, idCliente = ?
+         SET descricao = ?, url = ?, tipo = ?, dataCriacao = ?, idCliente = ?, lido = ?
        WHERE id = ?
       `,
-      [n.descricao, n.url, n.tipo, n.dataCriacao ?? null, n.idCliente, id]
+      [n.descricao, n.url, n.tipo, n.dataCriacao ?? null, n.idCliente, n.lido ?? 0, id]
     );
     return result.affectedRows > 0;
   } finally {
@@ -77,6 +77,10 @@ export const listar = async (p: PaginacaoParams) => {
     filtros.push(`(descricao LIKE ? OR url LIKE ?)`); 
     const like = `%${p.busca}%`;
     params.push(like, like);
+  }
+  if (p.lido !== undefined && p.lido !== null && p.lido !== '') {
+    filtros.push(`lido = ?`);
+    params.push(Number(p.lido));
   }
   if (p.dataCriacaoDe) { filtros.push(`dataCriacao >= ?`); params.push(p.dataCriacaoDe); }
   if (p.dataCriacaoAte) { filtros.push(`dataCriacao <= ?`); params.push(p.dataCriacaoAte); }

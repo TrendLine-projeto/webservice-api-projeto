@@ -6,6 +6,7 @@ export interface NotificacaoBase {
   tipo: string;
   dataCriacao?: string | Date | null;
   idCliente: number;
+  lido?: number;
 }
 
 export interface Notificacao extends NotificacaoBase {
@@ -22,4 +23,5 @@ export interface PaginacaoParams {
   busca?: string;
   dataCriacaoDe?: string;
   dataCriacaoAte?: string;
+  lido?: number | string;
 }

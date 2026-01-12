@@ -1,8 +1,24 @@
-import * as FornecedorSupriModel from '../../models/fornecedorSupri';
+﻿import * as FornecedorSupriModel from '../../models/fornecedorSupri';
+import * as NotificacoesService from '../notificacoes/notificacoes';
+
+const criarNotificacaoFornecedorSupri = async (
+    acao: 'Criacao' | 'Edicao' | 'Alteracao',
+    payload: { idCliente?: number; razaoSocial?: string },
+    idFornecedor?: number
+) => {
+    if (!payload?.idCliente) return;
+    const nome = payload.razaoSocial || (idFornecedor ? `fornecedor ${idFornecedor}` : 'fornecedor');
+    await NotificacoesService.criar({
+        descricao: `${acao} de fornecedor de suprimentos: ${nome}`,
+        url: '/fornecedoressuprimentos',
+        tipo: acao,
+        idCliente: Number(payload.idCliente)
+    });
+};
 
 export const criarFornecedor = async (fornecedor: any) => {
     if (!fornecedor.razaoSocial || !fornecedor.cnpj || !fornecedor.cliente_id) {
-        throw { tipo: 'Validacao', mensagem: 'Razão Social, CNPJ e Cliente ID são obrigatórios.' };
+        throw { tipo: 'Validacao', mensagem: 'RazÃ£o Social, CNPJ e Cliente ID sÃ£o obrigatÃ³rios.' };
     }
 
     const clienteExiste = await FornecedorSupriModel.verificarClientePorId(fornecedor.cliente_id);
@@ -12,6 +28,10 @@ export const criarFornecedor = async (fornecedor: any) => {
     }
 
     const resultado = await FornecedorSupriModel.inserirFornecedor(fornecedor);
+    await criarNotificacaoFornecedorSupri('Criacao', {
+        idCliente: fornecedor.cliente_id,
+        razaoSocial: fornecedor.razaoSocial
+    }, resultado.insertId);
 
     return {
         id: resultado.insertId,
@@ -21,7 +41,7 @@ export const criarFornecedor = async (fornecedor: any) => {
 
 export const buscarFornecedoresPorCliente = async (filtros: any) => {
     if (!filtros.cliente_id) {
-        throw { tipo: 'Validacao', mensagem: 'Cliente ID é obrigatório.' };
+        throw { tipo: 'Validacao', mensagem: 'Cliente ID Ã© obrigatÃ³rio.' };
     }
 
     const { totalResult, fornecedoresResult } = await FornecedorSupriModel.buscarFornecedoresPorCliente(filtros);
@@ -36,7 +56,7 @@ export const buscarFornecedoresPorCliente = async (filtros: any) => {
 
 export const buscarFornecedoresSimplesPorCliente = async (cliente_id: number) => {
     if (!cliente_id) {
-        throw { tipo: 'Validacao', mensagem: 'Cliente ID é obrigatório.' };
+        throw { tipo: 'Validacao', mensagem: 'Cliente ID Ã© obrigatÃ³rio.' };
     }
 
     const fornecedores = await FornecedorSupriModel.buscarFornecedoresSimplesPorCliente(cliente_id);
@@ -53,24 +73,42 @@ export const buscarFornecedorPorId = async (id: number) => {
 };
 
 export const editarFornecedor = async (id: number, dados: any) => {
+    const existente = await FornecedorSupriModel.buscarFornecedorPorId(id);
     const sucesso = await FornecedorSupriModel.editarFornecedor(id, dados);
+    if (sucesso?.sucesso) {
+        const fornecedor = existente.fornecedoresResult?.[0];
+        await criarNotificacaoFornecedorSupri('Edicao', {
+            idCliente: dados.cliente_id ?? fornecedor?.cliente_id,
+            razaoSocial: dados.razaoSocial ?? fornecedor?.razaoSocial
+        }, id);
+    }
     return {
         success: sucesso
     };
 };
 
 export const deletarFornecedor = async (id: number): Promise<{ success: boolean; mensagem: string }> => {
+    const existente = await FornecedorSupriModel.buscarFornecedorPorId(id);
     const { sucesso, linhasAfetadas } = await FornecedorSupriModel.deletarFornecedor(id);
 
     if (!sucesso || linhasAfetadas === 0) {
         return {
             success: false,
-            mensagem: 'Fornecedor não encontrado ou já excluído.'
+            mensagem: 'Fornecedor nÇœo encontrado ou jÇ­ excluÇðdo.'
         };
+    }
+
+    const fornecedor = existente.fornecedoresResult?.[0];
+    if (fornecedor) {
+        await criarNotificacaoFornecedorSupri('Alteracao', {
+            idCliente: fornecedor.cliente_id,
+            razaoSocial: fornecedor.razaoSocial
+        }, id);
     }
 
     return {
         success: true,
-        mensagem: 'Fornecedor excluído com sucesso!'
+        mensagem: 'Fornecedor excluÇðdo com sucesso!'
     };
 };
+

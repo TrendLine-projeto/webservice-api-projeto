@@ -1,4 +1,5 @@
 import * as OrdensServicoModel from '../../models/ordensServico';
+import * as NotificacoesService from '../notificacoes/notificacoes';
 import { OrdemServicoBase, PaginacaoParams } from '../../types/ordensServico/ordensServico';
 
 const assertStr = (v: any, nome: string) => {
@@ -32,6 +33,21 @@ const normalizeDate = (v: any, nome: string) => {
   return v;
 };
 
+const criarNotificacaoOrdemServico = async (
+  acao: 'Criacao' | 'Edicao' | 'Alteracao',
+  payload: { idCliente?: number; numeroOrdem?: string },
+  idOrdem?: number
+) => {
+  if (!payload?.idCliente) return;
+  const identificador = payload.numeroOrdem || (idOrdem ? `ordem ${idOrdem}` : 'ordem');
+  await NotificacoesService.criar({
+    descricao: `${acao} de ordem de servico: ${identificador}`,
+    url: '/ativos/os',
+    tipo: acao,
+    idCliente: Number(payload.idCliente)
+  });
+};
+
 export const criar = async (o: OrdemServicoBase) => {
   assertStr(o.descricao, 'descricao');
   assertStr(o.numeroOrdem, 'numeroOrdem');
@@ -55,6 +71,10 @@ export const criar = async (o: OrdemServicoBase) => {
   };
 
   const result = await OrdensServicoModel.inserir(payload);
+  await criarNotificacaoOrdemServico('Criacao', {
+    idCliente: payload.idCliente,
+    numeroOrdem: payload.numeroOrdem
+  }, result.insertId);
   return { id: result.insertId, ...payload };
 };
 
@@ -98,12 +118,22 @@ export const atualizar = async (id: number, o: OrdemServicoBase) => {
 
   const ok = await OrdensServicoModel.atualizar(id, payload);
   if (!ok) throw { tipo: 'NaoEncontrado', mensagem: 'Ordem de servico nao encontrada' };
+  await criarNotificacaoOrdemServico('Edicao', {
+    idCliente: payload.idCliente,
+    numeroOrdem: payload.numeroOrdem
+  }, id);
   return OrdensServicoModel.buscarPorId(id);
 };
 
 export const remover = async (id: number) => {
+  const existente = await OrdensServicoModel.buscarPorId(id);
+  if (!existente) throw { tipo: 'NaoEncontrado', mensagem: 'Ordem de servico nao encontrada' };
   const ok = await OrdensServicoModel.remover(id);
   if (!ok) throw { tipo: 'NaoEncontrado', mensagem: 'Ordem de servico nao encontrada' };
+  await criarNotificacaoOrdemServico('Alteracao', {
+    idCliente: existente.idCliente,
+    numeroOrdem: existente.numeroOrdem
+  }, id);
   return { id, removido: true };
 };
 
@@ -111,6 +141,8 @@ export const finalizar = async (
   id: number,
   dados: { finalizado?: number; descricaoFinalizado: string; dataFinalizado?: string | null; }
 ) => {
+  const existente = await OrdensServicoModel.buscarPorId(id);
+  if (!existente) throw { tipo: 'NaoEncontrado', mensagem: 'Ordem de servico nao encontrada' };
   const finalizado = assertFlag(dados.finalizado ?? 1, 'finalizado', 1);
   assertStr(dados.descricaoFinalizado, 'descricaoFinalizado');
   const dataFinalizado = normalizeDate(dados.dataFinalizado ?? new Date(), 'dataFinalizado');
@@ -123,5 +155,9 @@ export const finalizar = async (
   );
 
   if (!ok) throw { tipo: 'NaoEncontrado', mensagem: 'Ordem de servico nao encontrada' };
+  await criarNotificacaoOrdemServico('Alteracao', {
+    idCliente: existente.idCliente,
+    numeroOrdem: existente.numeroOrdem
+  }, id);
   return OrdensServicoModel.buscarPorId(id);
 };

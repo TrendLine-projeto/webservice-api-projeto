@@ -23,6 +23,15 @@ const normalizeDate = (v: any, nome: string, valorPadrao: any = null) => {
   return v;
 };
 
+const normalizeLido = (v: any, nome: string, valorPadrao: any = undefined) => {
+  if (v === undefined || v === null || v === '') return valorPadrao;
+  const n = Number(v);
+  if (!Number.isFinite(n) || (n !== 0 && n !== 1)) {
+    throw { tipo: 'Validacao', mensagem: `Campo ${nome} deve ser 0 ou 1` };
+  }
+  return n;
+};
+
 export const criar = async (n: NotificacaoBase) => {
   assertStr(n.descricao, 'descricao');
   assertStr(n.url, 'url');
@@ -30,13 +39,15 @@ export const criar = async (n: NotificacaoBase) => {
   assertNum(n.idCliente, 'idCliente');
 
   const dataCriacao = normalizeDate(n.dataCriacao, 'dataCriacao', new Date());
+  const lido = normalizeLido(n.lido, 'lido', 0);
 
   const payload: NotificacaoBase = {
     descricao: n.descricao,
     url: n.url,
     tipo: n.tipo,
     dataCriacao,
-    idCliente: Number(n.idCliente)
+    idCliente: Number(n.idCliente),
+    lido
   };
 
   const result = await NotificacoesModel.inserir(payload);
@@ -46,7 +57,8 @@ export const criar = async (n: NotificacaoBase) => {
 export const listar = async (p: PaginacaoParams) => {
   normalizeDate(p.dataCriacaoDe, 'dataCriacaoDe');
   normalizeDate(p.dataCriacaoAte, 'dataCriacaoAte');
-  return NotificacoesModel.listar(p);
+  const lido = normalizeLido(p.lido, 'lido');
+  return NotificacoesModel.listar({ ...p, lido });
 };
 
 export const obter = async (id: number) => {
@@ -69,13 +81,15 @@ export const atualizar = async (id: number, n: NotificacaoBase) => {
     'dataCriacao',
     existente.dataCriacao ?? new Date()
   );
+  const lido = normalizeLido(n.lido, 'lido', existente.lido ?? 0);
 
   const payload: NotificacaoBase = {
     descricao: n.descricao,
     url: n.url,
     tipo: n.tipo,
     dataCriacao,
-    idCliente: Number(n.idCliente)
+    idCliente: Number(n.idCliente),
+    lido
   };
 
   const ok = await NotificacoesModel.atualizar(id, payload);

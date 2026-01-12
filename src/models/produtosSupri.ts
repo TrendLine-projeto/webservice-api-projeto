@@ -15,6 +15,19 @@ export const verificarFornecedor = async (fornecedorId: number): Promise<boolean
   }
 };
 
+export const buscarClientePorFornecedorId = async (fornecedorId: number): Promise<number | null> => {
+  const conn: PoolConnection = await pool.getConnection();
+  try {
+    const [results] = await conn.query<any[]>(
+      'SELECT cliente_id FROM fornecedor_suprimentos WHERE id = ? LIMIT 1',
+      [fornecedorId]
+    );
+    return results?.[0]?.cliente_id ?? null;
+  } finally {
+    conn.release();
+  }
+};
+
 export const inserirProduto = async (produto: any) => {
   const conn: PoolConnection = await pool.getConnection();
   try {

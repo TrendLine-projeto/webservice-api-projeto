@@ -1,4 +1,20 @@
 import * as ProdutosSupriModel from '../../models/produtosSupri';
+import * as NotificacoesService from '../notificacoes/notificacoes';
+
+const criarNotificacaoProdutoSupri = async (
+  acao: 'Criacao' | 'Edicao' | 'Alteracao',
+  payload: { idCliente?: number | null; nomeProduto?: string },
+  idProduto?: number
+) => {
+  if (!payload?.idCliente) return;
+  const nome = payload.nomeProduto || (idProduto ? `produto ${idProduto}` : 'produto');
+  await NotificacoesService.criar({
+    descricao: `${acao} de produto de suprimentos: ${nome}`,
+    url: '/fornecedoressuprimentos',
+    tipo: acao,
+    idCliente: Number(payload.idCliente)
+  });
+};
 
 export const criarProduto = async (produto: any) => {
 
@@ -12,6 +28,11 @@ export const criarProduto = async (produto: any) => {
   }
 
   const resultado = await ProdutosSupriModel.inserirProduto(produto);
+  const idCliente = await ProdutosSupriModel.buscarClientePorFornecedorId(produto.fornecedor_id);
+  await criarNotificacaoProdutoSupri('Criacao', {
+    idCliente,
+    nomeProduto: produto.nomeProduto
+  }, resultado.insertId);
 
   return {
     id: resultado.insertId,

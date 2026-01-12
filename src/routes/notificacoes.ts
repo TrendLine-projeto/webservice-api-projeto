@@ -28,6 +28,9 @@ import * as login from '../middleware/login';
  *           format: date-time
  *         idCliente:
  *           type: integer
+ *         lido:
+ *           type: integer
+ *           enum: [0, 1]
  */
 
 const router = Router();
@@ -80,6 +83,12 @@ router.post('/', notificacoesController.criarNotificacao);
  *         schema:
  *           type: string
  *         description: Busca por descricao ou url.
+ *       - in: query
+ *         name: lido
+ *         schema:
+ *           type: integer
+ *           enum: [0, 1]
+ *         description: Filtra por status de leitura (0 nao lido, 1 lido).
  *       - in: query
  *         name: dataCriacaoDe
  *         schema:
