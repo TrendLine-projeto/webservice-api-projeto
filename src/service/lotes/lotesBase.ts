@@ -4,6 +4,8 @@ import * as produtoModel from '../../models/produtosProducao';
 import * as fornecedorModel from '../../models/fornecedorProducao'
 import * as notasFiscais from '../../models/notaFiscal';
 import * as lotesFechamentoModel from '../../models/lotesFechamento';
+import * as conferenciasQualidadeModel from '../../models/conferenciasQualidade';
+import * as conferenciaQualidadeDefeitosModel from '../../models/conferenciaQualidadeDefeitos';
 import { EntradaDeLote } from '../../types/lotes/EntradaDeLote';
 import { LotePut } from '../../types/lotes/AlterarLote';
 import { NotaFiscal } from '../../types/notasFiscais/notaFiscal';
@@ -69,12 +71,31 @@ export const buscarLotesPorCliente = async (filtros: any) => {
   const produtosPorLote = await produtoModel.buscarProdutosPorLoteIds(loteIds);
   const fornecedoresPorId = await fornecedorModel.buscarFornecedoresPorIds(fornecedorIds);
   const fechamentosPorLote = await lotesFechamentoModel.buscarPorEntradaLoteIds(loteIds);
+  const produtosLista = Object.values(produtosPorLote).flat();
+  const produtoIds = produtosLista.map((produto: any) => produto.id);
+  const conferenciasPorProduto = await conferenciasQualidadeModel.buscarPorProdutoIds(produtoIds);
+  const conferenciaIds = Object.values(conferenciasPorProduto)
+    .flat()
+    .map((conferencia: any) => conferencia.id);
+  const defeitosPorConferencia = await conferenciaQualidadeDefeitosModel.buscarPorConferenciaIds(conferenciaIds);
+
+  const montarProdutos = (loteId: number) => {
+    const produtos = produtosPorLote[loteId] || [];
+    return produtos.map((produto: any) => {
+      const conferencias = conferenciasPorProduto[produto.id] || [];
+      const conferenciasComDefeitos = conferencias.map((conferencia: any) => ({
+        ...conferencia,
+        defeitos: defeitosPorConferencia[conferencia.id] || []
+      }));
+      return { ...produto, conferencias: conferenciasComDefeitos };
+    });
+  };
 
   const lotesComDados = resultado.lotes.map((lote: any) => ({
     ...lote,
     fornecedor: fornecedoresPorId[lote.idFornecedor_producao] || null,
     notasFiscais: notasPorLote[lote.id] || [],
-    produtos: produtosPorLote[lote.id] || [],
+    produtos: montarProdutos(lote.id),
     fechamento: fechamentosPorLote[lote.id] || null
   }));
 
@@ -124,11 +145,26 @@ export const buscarLotePorId = async (idLote: number) => {
     fornecedorModel.buscarFornecedoresPorIds([lote.idFornecedor_producao])
   ]);
   const fechamento = await lotesFechamentoModel.buscarPorEntradaLoteId(lote.id);
+  const produtosDoLote = produtos[lote.id] || [];
+  const produtoIds = produtosDoLote.map((produto: any) => produto.id);
+  const conferenciasPorProduto = await conferenciasQualidadeModel.buscarPorProdutoIds(produtoIds);
+  const conferenciaIds = Object.values(conferenciasPorProduto)
+    .flat()
+    .map((conferencia: any) => conferencia.id);
+  const defeitosPorConferencia = await conferenciaQualidadeDefeitosModel.buscarPorConferenciaIds(conferenciaIds);
+  const produtosComConferencias = produtosDoLote.map((produto: any) => {
+    const conferencias = conferenciasPorProduto[produto.id] || [];
+    const conferenciasComDefeitos = conferencias.map((conferencia: any) => ({
+      ...conferencia,
+      defeitos: defeitosPorConferencia[conferencia.id] || []
+    }));
+    return { ...produto, conferencias: conferenciasComDefeitos };
+  });
 
   return {
     ...lote,
     notasFiscais: notas[lote.id] || [],
-    produtos: produtos[lote.id] || [],
+    produtos: produtosComConferencias,
     fornecedor: fornecedor[lote.idFornecedor_producao] || null,
     fechamento
   };

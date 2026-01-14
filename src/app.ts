@@ -18,6 +18,8 @@ import rotaMaquinas from '../src/routes/maquinas';
 import rotaManutencaoMaquinas from '../src/routes/manutencaoMaquinas';
 import rotaOrdensServico from '../src/routes/ordensServico';
 import rotaNotificacoes from '../src/routes/notificacoes';
+import rotaConferenciasQualidade from '../src/routes/conferenciasQualidade';
+import rotaConferenciaQualidadeDefeitos from '../src/routes/conferenciaQualidadeDefeitos';
 
 const app = express();
 
@@ -80,6 +82,8 @@ app.use('/maquinas', rotaMaquinas);
 app.use('/manutencoes', rotaManutencaoMaquinas);
 app.use('/ordensServico', rotaOrdensServico);
 app.use('/notificacoes', rotaNotificacoes);
+app.use('/qualidade', rotaConferenciasQualidade);
+app.use('/qualidade', rotaConferenciaQualidadeDefeitos);
 
 app.use((req: Request, res: Response, next: NextFunction) => {
   const erro = new Error('Rota não encontrado');

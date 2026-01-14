@@ -64,6 +64,7 @@ export const buscarLotesPorCliente = async (filtros: any) => {
     valorEstimado,
     dataEntrada,
     dataPrevistaSaida,
+    identificadorConferencia,
     loteIniciado,
     loteFinalizado
   } = filtros;
@@ -96,6 +97,16 @@ export const buscarLotesPorCliente = async (filtros: any) => {
   if (dataPrevistaSaida) {
     where += ' AND dataPrevistaSaida = ?';
     params.push(dataPrevistaSaida);
+  }
+  if (identificadorConferencia) {
+    where += ` AND EXISTS (
+      SELECT 1
+        FROM produtos_producao pp
+        JOIN conferencias_qualidade cq ON cq.idProdutoProducao = pp.id
+       WHERE pp.idEntrada_lotes = entrada_lotes.id
+         AND cq.identificador LIKE ?
+    )`;
+    params.push(`%${identificadorConferencia}%`);
   }
   if (loteIniciado !== null && loteIniciado !== undefined) {
     where += ' AND loteIniciado = ?';
