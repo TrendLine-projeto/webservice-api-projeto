@@ -20,6 +20,7 @@ import rotaOrdensServico from '../src/routes/ordensServico';
 import rotaNotificacoes from '../src/routes/notificacoes';
 import rotaConferenciasQualidade from '../src/routes/conferenciasQualidade';
 import rotaConferenciaQualidadeDefeitos from '../src/routes/conferenciaQualidadeDefeitos';
+import rotaDashboard from '../src/routes/dashboard';
 
 const app = express();
 
@@ -84,6 +85,7 @@ app.use('/ordensServico', rotaOrdensServico);
 app.use('/notificacoes', rotaNotificacoes);
 app.use('/qualidade', rotaConferenciasQualidade);
 app.use('/qualidade', rotaConferenciaQualidadeDefeitos);
+app.use('/dashboard', rotaDashboard);
 
 app.use((req: Request, res: Response, next: NextFunction) => {
   const erro = new Error('Rota não encontrado');
