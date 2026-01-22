@@ -21,6 +21,8 @@ import rotaNotificacoes from '../src/routes/notificacoes';
 import rotaConferenciasQualidade from '../src/routes/conferenciasQualidade';
 import rotaConferenciaQualidadeDefeitos from '../src/routes/conferenciaQualidadeDefeitos';
 import rotaDashboard from '../src/routes/dashboard';
+import rotaIntegrationGmail from '../src/routes/integrationGmail';
+import rotaIntegrationImap from '../src/routes/integrationImap';
 
 const app = express();
 
@@ -86,6 +88,8 @@ app.use('/notificacoes', rotaNotificacoes);
 app.use('/qualidade', rotaConferenciasQualidade);
 app.use('/qualidade', rotaConferenciaQualidadeDefeitos);
 app.use('/dashboard', rotaDashboard);
+app.use('/integration', rotaIntegrationGmail);
+app.use('/integration', rotaIntegrationImap);
 
 app.use((req: Request, res: Response, next: NextFunction) => {
   const erro = new Error('Rota não encontrado');
