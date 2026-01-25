@@ -80,4 +80,46 @@ router.get('/cards', dashboardController.obterCards);
  */
 router.get('/serie-mensal', dashboardController.obterSerieMensal);
 
+/**
+ * @swagger
+ * /dashboard/operacao-alertas:
+ *   get:
+ *     summary: Retorna indicadores operacionais e alertas de lotes.
+ *     tags: [Dashboard]
+ *     parameters:
+ *       - in: query
+ *         name: idCliente
+ *         required: true
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: dataEntradaDe
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: dataEntradaAte
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: idFilial
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: idFornecedor_producao
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: limite
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: diasRisco
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Dados de operacao e alertas.
+ */
+router.get('/operacao-alertas', dashboardController.obterOperacaoAlertas);
+
 export default router;
