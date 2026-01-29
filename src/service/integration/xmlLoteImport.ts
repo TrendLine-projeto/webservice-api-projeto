@@ -129,7 +129,8 @@ const criarNotificacaoLote = async (idCliente: number, numeroIdentificador: stri
 
 export const processarXmlParaLote = async (
   xmlRaw: string,
-  clienteIdEsperado?: number
+  clienteIdEsperado?: number,
+  integracaoGmailXmlId?: number
 ): Promise<LoteImportResult> => {
   const data = parser.parse(xmlRaw);
   const infNFe = findNode(data, 'infNFe');
@@ -177,13 +178,19 @@ export const processarXmlParaLote = async (
   const numeroIdentificador = resolveNumeroIdentificador(data, infNFe);
   const nomeEntregador = toText(emit?.xNome || emit?.xFant);
   const nomeRecebedor = toText(dest?.xNome || dest?.xFant);
-  const valorEstimado = toNum(total?.vNF ?? total?.vProd) ?? 0;
-
   const itens = asArray(infNFe?.det);
+  let valorEstimadoProdutos = 0;
   const produtos = itens.map((item: any, idx: number) => {
     const prod = item?.prod || {};
     const numeroProduto =
       toText(prod?.cProd) || toText(item?.['@_nItem']) || `${numeroIdentificador}-${idx + 1}`;
+    const valorPorPeca = toNum(prod?.vUnCom ?? prod?.vUnTrib) ?? 0;
+    const quantidadeProduto = toNum(prod?.qCom ?? prod?.qTrib) ?? 0;
+    const totalItem = toNum(prod?.vProd);
+    const totalCalculado = Number.isFinite(totalItem)
+      ? (totalItem as number)
+      : (valorPorPeca * quantidadeProduto);
+    valorEstimadoProdutos += totalCalculado;
 
     return {
       numeroIdentificador: numeroProduto,
@@ -192,8 +199,8 @@ export const processarXmlParaLote = async (
       tamanho: toText(prod?.uCom),
       corPrimaria: '',
       corSecundaria: '',
-      valorPorPeca: toNum(prod?.vUnCom ?? prod?.vUnTrib) ?? 0,
-      quantidadeProduto: toNum(prod?.qCom ?? prod?.qTrib) ?? 0,
+      valorPorPeca,
+      quantidadeProduto,
       descricaoCurta: toText(prod?.xProd),
       idFilial: filial.id,
     };
@@ -207,10 +214,11 @@ export const processarXmlParaLote = async (
     numeroIdentificador,
     nomeEntregador: nomeEntregador || 'Fornecedor',
     nomeRecebedor: nomeRecebedor || 'Cliente',
-    valorEstimado,
+    valorEstimado: valorEstimadoProdutos,
     valorHoraEstimado: 0,
     loteIniciado: false,
     loteFinalizado: false,
+    integracaoExterna: true,
     idFilial: filial.id,
     idFornecedor_producao: fornecedor.id,
     produtos,
@@ -219,6 +227,7 @@ export const processarXmlParaLote = async (
   const notaFiscal = parseNotaFiscal(data, infNFe);
   const loteCriado = await lotesService.criarLote(entradaDeLote, notaFiscal, {
     integrarNoBling: false,
+    integracaoGmailXmlId,
   });
 
   await criarNotificacaoLote(cliente.id, numeroIdentificador);

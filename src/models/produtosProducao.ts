@@ -401,6 +401,80 @@ export const atualizarBlingIdentify = async (idProduto: number, blingId: number)
   return result.affectedRows === 1;
 }
 
+export const atualizarAtivoProdutoERecalcularLote = async (idProduto: number, ativo: number) => {
+  const conn: PoolConnection = await pool.getConnection();
+  try {
+    await conn.beginTransaction();
+
+    const [prodRows] = await conn.query<RowDataPacket[]>(
+      `SELECT id, idEntrada_lotes, someValorTotalProduto, ativo
+         FROM produtos_producao
+        WHERE id = ?
+        FOR UPDATE`,
+      [idProduto]
+    );
+
+    if (prodRows.length === 0) {
+      await conn.rollback();
+      return null;
+    }
+
+    const produto = prodRows[0] as any;
+    const idLote = Number(produto.idEntrada_lotes);
+
+    if (!idLote) {
+      await conn.rollback();
+      throw { tipo: 'Validacao', mensagem: 'Produto sem lote associado' };
+    }
+
+    await conn.query<ResultSetHeader>(
+      `UPDATE produtos_producao
+          SET ativo = ?
+        WHERE id = ?`,
+      [ativo ? 1 : 0, idProduto]
+    );
+
+    const [sumRows] = await conn.query<RowDataPacket[]>(
+      `SELECT COALESCE(SUM(CAST(REPLACE(someValorTotalProduto, ',', '.') AS DECIMAL(12,2))), 0) AS total
+         FROM produtos_producao
+        WHERE idEntrada_lotes = ?
+          AND (ativo IS NULL OR ativo = 1)`,
+      [idLote]
+    );
+
+    const totalRaw = (sumRows as any[])[0]?.total ?? 0;
+    const total = Number(totalRaw);
+
+    await conn.query<ResultSetHeader>(
+      `UPDATE entrada_lotes
+          SET valorEstimado = ?
+        WHERE id = ?`,
+      [Number.isNaN(total) ? 0 : total, idLote]
+    );
+
+    await conn.commit();
+
+    return {
+      idEntrada_lotes: idLote,
+      valorEstimado: Number.isNaN(total) ? 0 : total,
+      ativo: ativo ? 1 : 0,
+    };
+  } catch (err) {
+    await conn.rollback();
+    throw err;
+  } finally {
+    conn.release();
+  }
+};
+
+export const desativarProdutoERecalcularLote = async (idProduto: number) => {
+  return await atualizarAtivoProdutoERecalcularLote(idProduto, 0);
+};
+
+export const ativarProdutoERecalcularLote = async (idProduto: number) => {
+  return await atualizarAtivoProdutoERecalcularLote(idProduto, 1);
+};
+
 /*export const inserirProdutosNoLote = async (idLote: number, produtos: ProdutoProducao[]) => {
     const conn: PoolConnection = await pool.getConnection();
 

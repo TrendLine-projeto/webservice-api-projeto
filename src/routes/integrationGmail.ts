@@ -68,4 +68,44 @@ const router = Router();
  */
 router.post('/gmail/importar', integrationGmailController.importarXmlDoGmail);
 
+/**
+ * @swagger
+ * /integration/gmail/nota_fiscal/{id}/xml:
+ *   get:
+ *     summary: Baixa o XML da nota fiscal vinculada ao Gmail.
+ *     tags: [IntegracaoGmail]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: XML da nota fiscal.
+ *       404:
+ *         description: Nota fiscal ou XML nao encontrado.
+ */
+router.get('/gmail/nota_fiscal/:id/xml', integrationGmailController.baixarNotaFiscalXml);
+
+/**
+ * @swagger
+ * /integration/gmail/nota_fiscal/{id}/pdf:
+ *   get:
+ *     summary: Gera o PDF (DANFE) da nota fiscal a partir do XML.
+ *     tags: [IntegracaoGmail]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: PDF da nota fiscal.
+ *       404:
+ *         description: Nota fiscal ou XML nao encontrado.
+ */
+router.get('/gmail/nota_fiscal/:id/pdf', integrationGmailController.baixarNotaFiscalPdf);
+
 export default router;

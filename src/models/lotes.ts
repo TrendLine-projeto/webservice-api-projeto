@@ -27,9 +27,10 @@ export const inserirLote = async (entradaDeLote: EntradaDeLote): Promise<ResultS
         dataPrevistaSaida,
         dataInicio,
         loteIniciado,
+        integracaoExterna,
         idFilial,
         idFornecedor_producao
-      ) VALUES (?, ?, ?, ?, ?, NOW(), NOW(), ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, NOW(), NOW(), ?, ?, ?, ?, ?)
     `;
 
     const dataInicio = entradaDeLote.loteIniciado ? new Date() : null;
@@ -42,6 +43,7 @@ export const inserirLote = async (entradaDeLote: EntradaDeLote): Promise<ResultS
       entradaDeLote.valorHoraEstimado,
       dataInicio,
       entradaDeLote.loteIniciado,
+      entradaDeLote.integracaoExterna ? 1 : 0,
       entradaDeLote.idFilial,
       entradaDeLote.idFornecedor_producao
     ];

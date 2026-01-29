@@ -4,7 +4,8 @@ import { NotaFiscal } from '../types/notasFiscais/notaFiscal';
 
 export const inserirNotaFiscal = async (
   nota: NotaFiscal,
-  lote_id: number
+  lote_id: number,
+  integracao_gmail_xml_id?: number | null
 ): Promise<void> => {
   const conn: PoolConnection = await pool.getConnection();
 
@@ -13,8 +14,9 @@ export const inserirNotaFiscal = async (
       INSERT INTO notas_fiscais (
         chaveAcesso, numeroNota, serie, dataEmissao,
         valorProdutos, valorFrete, valorICMS, valorIPI,
-        transportadora, qtdVolumes, pesoBruto, lote_id
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        transportadora, qtdVolumes, pesoBruto, lote_id,
+        integracao_gmail_xml_id
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
     const values = [
@@ -29,10 +31,27 @@ export const inserirNotaFiscal = async (
       nota.transportadora,
       nota.qtdVolumes,
       nota.pesoBruto,
-      lote_id
+      lote_id,
+      integracao_gmail_xml_id ?? null
     ];
 
     await conn.query<ResultSetHeader>(query, values);
+  } finally {
+    conn.release();
+  }
+};
+
+export const buscarPorId = async (id: number) => {
+  const conn: PoolConnection = await pool.getConnection();
+  try {
+    const query = `
+      SELECT *
+        FROM notas_fiscais
+       WHERE id = ?
+       LIMIT 1
+    `;
+    const [rows] = await conn.query<RowDataPacket[]>(query, [id]);
+    return rows[0] ?? null;
   } finally {
     conn.release();
   }

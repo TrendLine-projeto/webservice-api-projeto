@@ -59,6 +59,15 @@ const withTimeout = async <T>(promise: Promise<T>, ms: number, label: string) =>
   }
 };
 
+const normalizePassword = (value: any, host: string) => {
+  const raw = value === undefined || value === null ? '' : String(value);
+  const trimmed = raw.trim();
+  if (/gmail\.com$/i.test(host) || /googlemail\.com$/i.test(host)) {
+    return trimmed.replace(/\s+/g, '');
+  }
+  return trimmed;
+};
+
 const resolveConfig = async (payload: TestPayload): Promise<ResolvedConfig> => {
   const clienteId = Number(payload?.cliente_id);
   if (!clienteId || Number.isNaN(clienteId)) {
@@ -77,7 +86,10 @@ const resolveConfig = async (payload: TestPayload): Promise<ResolvedConfig> => {
 
   const host = toText(payload.host, config?.host);
   const userEmail = toText(payload.user_email, config?.user_email);
-  const password = toText(payload.password_encrypted, config?.password_encrypted);
+  const password = normalizePassword(
+    toText(payload.password_encrypted, config?.password_encrypted),
+    host || ''
+  );
   const mailbox = toText(payload.mailbox, config?.mailbox || 'INBOX') || 'INBOX';
   const port = toNumber(payload.port, config?.port ?? 993);
   const secure = toBool(payload.secure, config?.secure ?? true);

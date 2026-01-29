@@ -114,6 +114,46 @@ router.put('/produtos_producao/alterar/:id', produtosProducaoController.atualiza
 
 /**
  * @swagger
+ * /produtorProducao/produtos_producao/desativar/{id}:
+ *   put:
+ *     summary: Desativa um produto de producao e recalcula o valor do lote.
+ *     tags: [ProdutosProducao]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Produto desativado e lote recalculado.
+ *       404:
+ *         description: Produto nao encontrado.
+ */
+router.put('/produtos_producao/desativar/:id', produtosProducaoController.desativarProdutoPorId);
+
+/**
+ * @swagger
+ * /produtorProducao/produtos_producao/ativar/{id}:
+ *   put:
+ *     summary: Ativa um produto de producao e recalcula o valor do lote.
+ *     tags: [ProdutosProducao]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Produto ativado e lote recalculado.
+ *       404:
+ *         description: Produto nao encontrado.
+ */
+router.put('/produtos_producao/ativar/:id', produtosProducaoController.ativarProdutoPorId);
+
+/**
+ * @swagger
  * /produtorProducao/produtos_producao/deletar/{id}:
  *   delete:
  *     summary: Remove um produto de producao.

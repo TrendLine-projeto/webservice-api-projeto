@@ -197,6 +197,62 @@ export const deletarProdutoPorId = async (id: number): Promise<boolean> => {
     return true;
 };
 
+export const desativarProdutoPorId = async (id: number) => {
+  if (!id || isNaN(id)) {
+    throw { tipo: 'Validacao', mensagem: 'ID do produto invalido' };
+  }
+
+  const produto = await ProdutosSupriModel.buscarProdutoPorId(id);
+  if (!produto) {
+    return null;
+  }
+
+  const resultado = await ProdutosSupriModel.desativarProdutoERecalcularLote(id);
+  if (!resultado) {
+    return null;
+  }
+
+  const idCliente = await buscarIdClientePorFilial(produto.idFilial);
+  await criarNotificacaoProdutoProducao('Alteracao', {
+    idCliente,
+    nomeProduto: produto.nomeProduto
+  }, id);
+
+  return {
+    produtoId: id,
+    idEntrada_lotes: resultado.idEntrada_lotes ?? produto.idEntrada_lotes,
+    valorEstimado: resultado.valorEstimado ?? null
+  };
+};
+
+export const ativarProdutoPorId = async (id: number) => {
+  if (!id || isNaN(id)) {
+    throw { tipo: 'Validacao', mensagem: 'ID do produto invalido' };
+  }
+
+  const produto = await ProdutosSupriModel.buscarProdutoPorId(id);
+  if (!produto) {
+    return null;
+  }
+
+  const resultado = await ProdutosSupriModel.ativarProdutoERecalcularLote(id);
+  if (!resultado) {
+    return null;
+  }
+
+  const idCliente = await buscarIdClientePorFilial(produto.idFilial);
+  await criarNotificacaoProdutoProducao('Alteracao', {
+    idCliente,
+    nomeProduto: produto.nomeProduto
+  }, id);
+
+  return {
+    produtoId: id,
+    idEntrada_lotes: resultado.idEntrada_lotes ?? produto.idEntrada_lotes,
+    valorEstimado: resultado.valorEstimado ?? null
+  };
+};
+
 /* export const buscarProdutosPorCliente = async (filtros: any) => {
   if (!filtros.cliente_id) {
     throw { tipo: 'Validacao', mensagem: 'Cliente ID é obrigatório.' };

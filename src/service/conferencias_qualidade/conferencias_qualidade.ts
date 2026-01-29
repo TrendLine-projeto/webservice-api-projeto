@@ -95,6 +95,29 @@ const gerarIdentificadorUnico = async () => {
   throw { tipo: 'Validacao', mensagem: 'Nao foi possivel gerar identificador unico' };
 };
 
+const validarQuantidadesProduto = async (
+  idProdutoProducao: number,
+  qtdInspecionada: number | null | undefined,
+  qtdAprovada: number | null | undefined,
+  qtdReprovada: number | null | undefined
+) => {
+  const quantidadeProduto = await ConferenciasQualidadeModel.buscarQuantidadeProdutoProducao(idProdutoProducao);
+  if (quantidadeProduto === null || quantidadeProduto === undefined) return;
+
+  const aprovadas = Number(qtdAprovada ?? 0);
+  const reprovadas = Number(qtdReprovada ?? 0);
+  const inspecionadas = Number(qtdInspecionada ?? 0);
+  const soma = aprovadas + reprovadas;
+
+  if (inspecionadas > quantidadeProduto) {
+    throw { tipo: 'Validacao', mensagem: 'Qtd inspecionada nao pode ser maior que a quantidade do produto' };
+  }
+
+  if (soma > quantidadeProduto) {
+    throw { tipo: 'Validacao', mensagem: 'Qtd aprovada + reprovada nao pode ser maior que a quantidade do produto' };
+  }
+};
+
 export const criar = async (payload: ConferenciaQualidadeBase) => {
   const idProdutoProducao = normalizeId(payload.idProdutoProducao, 'idProdutoProducao');
   const existeProduto = await ConferenciasQualidadeModel.verificarProdutoProducaoPorId(idProdutoProducao);
@@ -136,6 +159,8 @@ export const criar = async (payload: ConferenciaQualidadeBase) => {
     requerReinspecao,
     finalizada
   };
+
+  await validarQuantidadesProduto(idProdutoProducao, qtdInspecionada, qtdAprovada, qtdReprovada);
 
   const result = await ConferenciasQualidadeModel.inserir(data);
   return { id: result.insertId, ...data };
@@ -248,6 +273,8 @@ export const atualizar = async (id: number, dados: Partial<ConferenciaQualidadeB
     requerReinspecao,
     finalizada
   };
+
+  await validarQuantidadesProduto(idProdutoProducao, qtdInspecionada, qtdAprovada, qtdReprovada);
 
   const ok = await ConferenciasQualidadeModel.atualizar(id, payload);
   if (!ok) throw { tipo: 'NaoEncontrado', mensagem: 'Conferencia de qualidade nao encontrada' };

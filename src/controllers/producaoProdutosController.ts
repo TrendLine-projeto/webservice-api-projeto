@@ -128,6 +128,64 @@ export const deletarPorId = async (req: Request, res: Response) => {
     }
 };
 
+export const desativarProdutoPorId = async (req: Request, res: Response) => {
+    const id = parseInt(req.params.id, 10);
+
+    if (isNaN(id)) {
+        return res.status(400).send({ mensagem: 'ID do produto invalido' });
+    }
+
+    try {
+        const resultado = await produtosProducaoService.desativarProdutoPorId(id);
+
+        if (!resultado) {
+            return res.status(404).send({ mensagem: 'Produto nao encontrado' });
+        }
+
+        return res.status(200).send({
+            mensagem: 'Produto desativado com sucesso',
+            produtoId: resultado.produtoId,
+            idEntrada_lotes: resultado.idEntrada_lotes,
+            valorEstimado: resultado.valorEstimado
+        });
+    } catch (error: any) {
+        if (error?.tipo === 'Validacao') {
+            return res.status(400).send({ mensagem: error.mensagem });
+        }
+
+        return res.status(500).send({ erro: error });
+    }
+};
+
+export const ativarProdutoPorId = async (req: Request, res: Response) => {
+    const id = parseInt(req.params.id, 10);
+
+    if (isNaN(id)) {
+        return res.status(400).send({ mensagem: 'ID do produto invalido' });
+    }
+
+    try {
+        const resultado = await produtosProducaoService.ativarProdutoPorId(id);
+
+        if (!resultado) {
+            return res.status(404).send({ mensagem: 'Produto nao encontrado' });
+        }
+
+        return res.status(200).send({
+            mensagem: 'Produto ativado com sucesso',
+            produtoId: resultado.produtoId,
+            idEntrada_lotes: resultado.idEntrada_lotes,
+            valorEstimado: resultado.valorEstimado
+        });
+    } catch (error: any) {
+        if (error?.tipo === 'Validacao') {
+            return res.status(400).send({ mensagem: error.mensagem });
+        }
+
+        return res.status(500).send({ erro: error });
+    }
+};
+
 /*
 export const reabrirLote = async (req: Request, res: Response) => {
     const { idEntrada_lotes } = req.body;

@@ -40,6 +40,16 @@ type ImapRuntimeConfig = {
 
 const toMysqlDateTime = (date: Date) => date.toISOString().slice(0, 19).replace('T', ' ');
 
+const normalizePassword = (value: any, host: string) => {
+  const raw = value === undefined || value === null ? '' : String(value);
+  const trimmed = raw.trim();
+  // Gmail app password pode vir com espacos no meio.
+  if (/gmail\.com$/i.test(host) || /googlemail\.com$/i.test(host)) {
+    return trimmed.replace(/\s+/g, '');
+  }
+  return trimmed;
+};
+
 const normalizeSinceDays = (value: number) => {
   if (!Number.isFinite(value)) return 30;
   if (value <= 0) return 30;
@@ -108,7 +118,7 @@ const mapConfig = (config: any): ImapRuntimeConfig => ({
   port: Number(config.port || 993),
   secure: !!config.secure,
   userEmail: String(config.user_email),
-  password: String(config.password_encrypted),
+  password: normalizePassword(config.password_encrypted, String(config.host)),
   mailbox: String(config.mailbox || 'INBOX'),
   sinceDays: Number(config.since_days || 30),
   unseenOnly: !!config.unseen_only,
@@ -188,11 +198,35 @@ export const importarGmailXml = async (
     ? await imapConfigService.buscarPorId(configId)
     : await imapConfigService.buscarAtivaPorCliente(clienteId);
   const config = mapConfig(configRaw);
+  const debug = process.env.INTEGRATION_DEBUG === 'true';
 
   if (config.clienteId !== clienteId) {
     const error: any = new Error('cliente_id nao corresponde a configuracao informada');
     error.status = 400;
     throw error;
+  }
+
+  if (debug) {
+    const maskedPassword = config.password ? `${'*'.repeat(Math.max(config.password.length - 2, 0))}${config.password.slice(-2)}` : '';
+    console.log('[imap-import] auth config', {
+      clienteId: config.clienteId,
+      configId: configId ?? null,
+      host: config.host,
+      port: config.port,
+      secure: config.secure,
+      userEmail: config.userEmail,
+      mailbox: config.mailbox,
+      sinceDays: config.sinceDays,
+      unseenOnly: config.unseenOnly,
+      markSeen: config.markSeen,
+      fromFilter: config.fromFilter || null,
+      subjectContains: config.subjectContains || null,
+      maxResults: config.maxResults || null,
+      parseTimeoutMs: config.parseTimeoutMs || null,
+      storePassword: config.storePassword,
+      passwordLen: config.password?.length || 0,
+      passwordMasked: maskedPassword,
+    });
   }
 
   const client = createImapClient({
@@ -223,7 +257,6 @@ export const importarGmailXml = async (
     erros: 0,
   };
   const uidsToMarkSeen = new Set<number>();
-  const debug = process.env.INTEGRATION_DEBUG === 'true';
 
   try {
     if (debug) {
@@ -339,7 +372,7 @@ export const importarGmailXml = async (
         });
 
         try {
-          const loteResult = await processarXmlParaLote(xmlContent, config.clienteId);
+          const loteResult = await processarXmlParaLote(xmlContent, config.clienteId, importId);
           await gmailXmlModel.atualizarParseStatus(importId, 'parsed_ok', null);
           if (debug) {
             console.log('[imap-import] lote criado', loteResult);

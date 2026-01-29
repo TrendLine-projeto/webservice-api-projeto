@@ -31,6 +31,21 @@ export const verificarProdutoProducaoPorId = async (id: number): Promise<boolean
   }
 };
 
+export const buscarQuantidadeProdutoProducao = async (id: number): Promise<number | null> => {
+  const conn: PoolConnection = await pool.getConnection();
+  try {
+    const [rows] = await conn.query<any[]>(
+      'SELECT quantidadeProduto FROM produtos_producao WHERE id = ? LIMIT 1',
+      [id]
+    );
+    if (!rows?.length) return null;
+    const quantidade = Number(rows[0].quantidadeProduto);
+    return Number.isFinite(quantidade) ? quantidade : null;
+  } finally {
+    conn.release();
+  }
+};
+
 export const verificarConferenciaFinalizadaPorProdutoId = async (idProdutoProducao: number): Promise<boolean> => {
   const conn: PoolConnection = await pool.getConnection();
   try {

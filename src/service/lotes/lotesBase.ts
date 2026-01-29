@@ -12,6 +12,7 @@ import { NotaFiscal } from '../../types/notasFiscais/notaFiscal';
 import { normalizeProdutoEntrada } from '../../helpers/normalizeProdutoEntrada';
 import { inserirProdutosCapturandoIds } from '../../helpers/inserirProdutosCapturandoIds';
 import { integrarProdutosNoBling } from '../../helpers/integrarProdutosNoBling';
+import { toNum, calcTotal } from '../../shared/num';
 
 const pad2 = (n: number) => String(n).padStart(2, '0');
 
@@ -22,22 +23,38 @@ const agoraFormatado = (): string => {
     `${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}`;
 };
 
-export const criarLote = async (entradaDeLote: EntradaDeLote, notaFiscal?: NotaFiscal, opts: { integrarNoBling?: boolean; concurrency?: number } = { integrarNoBling: true, concurrency: 3 }) => {
+export const criarLote = async (
+  entradaDeLote: EntradaDeLote,
+  notaFiscal?: NotaFiscal,
+  opts: { integrarNoBling?: boolean; concurrency?: number; integracaoGmailXmlId?: number } = { integrarNoBling: true, concurrency: 3 }
+) => {
   const filialExiste = await lotesModel.verificarFilialPorId(entradaDeLote.idFilial);
   if (!filialExiste) {
     throw { tipo: 'FilialNaoEncontrada', mensagem: 'Filial não encontrada. Verifique o ID informado.' };
   }
 
-  const { insertId: idLoteCriado } = await lotesModel.inserirLote(entradaDeLote);
-
   const entradaProdutos = Array.isArray(entradaDeLote.produtos) ? entradaDeLote.produtos : [];
+  const valorEstimadoCalculado = entradaProdutos.reduce((acc, produto) => {
+    const totalInformado = toNum((produto as any)?.someValorTotalProduto);
+    if (Number.isFinite(totalInformado)) return acc + (totalInformado as number);
+    return acc + calcTotal((produto as any)?.valorPorPeca, (produto as any)?.quantidadeProduto);
+  }, 0);
+
+  const entradaDeLoteNormalizada = {
+    ...entradaDeLote,
+    valorEstimado: entradaProdutos.length ? valorEstimadoCalculado : entradaDeLote.valorEstimado,
+    integracaoExterna: Boolean(entradaDeLote.integracaoExterna),
+  };
+
+  const { insertId: idLoteCriado } = await lotesModel.inserirLote(entradaDeLoteNormalizada);
+
   const produtosNormalizados = entradaProdutos.map((p, idx) =>
-    normalizeProdutoEntrada(entradaDeLote, p, idx, idLoteCriado)
+    normalizeProdutoEntrada(entradaDeLoteNormalizada, p, idx, idLoteCriado)
   );
   const idsLocais = await inserirProdutosCapturandoIds(produtosNormalizados);
 
   if (notaFiscal) {
-    try { await notasFiscais.inserirNotaFiscal(notaFiscal, idLoteCriado); }
+    try { await notasFiscais.inserirNotaFiscal(notaFiscal, idLoteCriado, opts.integracaoGmailXmlId); }
     catch (e) { console.error('Erro ao inserir nota fiscal:', e); }
   }
 
@@ -52,7 +69,7 @@ export const criarLote = async (entradaDeLote: EntradaDeLote, notaFiscal?: NotaF
 
   return {
     id: idLoteCriado,
-    ...entradaDeLote,
+    ...entradaDeLoteNormalizada,
     resultadosBling,
   };
 };

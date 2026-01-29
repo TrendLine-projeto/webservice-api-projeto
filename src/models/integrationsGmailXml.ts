@@ -97,3 +97,20 @@ export const atualizarParseStatus = async (
     conn.release();
   }
 };
+
+export const buscarPorId = async (id: number) => {
+  const conn: PoolConnection = await pool.getConnection();
+
+  try {
+    const query = `
+      SELECT *
+      FROM integrations_gmail_xml
+      WHERE id = ?
+      LIMIT 1
+    `;
+    const [rows] = await conn.query<RowDataPacket[]>(query, [id]);
+    return rows[0] ?? null;
+  } finally {
+    conn.release();
+  }
+};

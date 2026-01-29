@@ -13,6 +13,7 @@ export interface EntradaDeLote {
   dataSaida?: string;
   loteIniciado: boolean;
   loteFinalizado: boolean;
+  integracaoExterna?: boolean | number;
   idFilial: number;
   idFornecedor_producao: number;
   produtos?: ProdutoProducao[];

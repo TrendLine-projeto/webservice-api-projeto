@@ -13,6 +13,7 @@ export const createImapClient = (config: ImapClientConfig) => {
     host: config.host,
     port: config.port,
     secure: config.secure,
+    logger: false,
     auth: {
       user: config.user,
       pass: config.password,
