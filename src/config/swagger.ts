@@ -9,9 +9,13 @@ const swaggerDefinition = {
   },
   servers: [
     {
-      url: process.env.SWAGGER_SERVER_URL || `http://localhost:${process.env.PORT || 3450}`,
+      url: `http://localhost:${process.env.PORT || 3450}`,
       description: 'Servidor padrão',
     },
+    {
+      url: 'https://webservice-api-projeto-production.up.railway.app',
+      description: 'Servidor de produção',
+    }
   ],
   components: {
     securitySchemes: {
