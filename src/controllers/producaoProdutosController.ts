@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import * as produtosProducaoService from '../service/produtos_producao/produtos_producaoBase';
+import * as anexosService from '../service/produtos_producao/anexos';
 import { ProdutoProducao } from '../types/ProdutoProducao/ProdutoProducao';
 import dotenv from 'dotenv';
 
@@ -184,6 +185,57 @@ export const ativarProdutoPorId = async (req: Request, res: Response) => {
 
         return res.status(500).send({ erro: error });
     }
+};
+
+export const anexarProduto = async (req: Request, res: Response) => {
+  const id = parseInt(req.params.id, 10);
+  if (isNaN(id)) {
+    return res.status(400).send({ mensagem: 'ID do produto invalido' });
+  }
+
+  const file = req.file;
+  if (!file) {
+    return res.status(400).send({ mensagem: 'Arquivo nao informado.' });
+  }
+
+  try {
+    const anexo = await anexosService.anexarProduto(id, file);
+    return res.status(201).send({
+      mensagem: 'Anexo enviado com sucesso.',
+      anexo,
+    });
+  } catch (error: any) {
+    if (error?.tipo === 'NotFound') {
+      return res.status(404).send({ mensagem: error.mensagem });
+    }
+    return res.status(500).send({ mensagem: 'Erro ao anexar produto.', erro: error });
+  }
+};
+
+export const buscarAnexosAssinados = async (req: Request, res: Response) => {
+  const id = parseInt(req.params.id, 10);
+  if (isNaN(id)) {
+    return res.status(400).send({ mensagem: 'ID do produto invalido' });
+  }
+
+  const expiresInRaw = req.query?.expiresIn;
+  const expiresIn = expiresInRaw ? Number(expiresInRaw) : undefined;
+  const expiresInSeconds = Number.isFinite(expiresIn) && (expiresIn as number) > 0
+    ? Math.floor(expiresIn as number)
+    : undefined;
+
+  try {
+    const anexos = await anexosService.listarAnexosAssinados(id, expiresInSeconds);
+    return res.status(200).send({
+      produtoId: id,
+      anexos,
+    });
+  } catch (error: any) {
+    if (error?.tipo === 'NotFound') {
+      return res.status(404).send({ mensagem: error.mensagem });
+    }
+    return res.status(500).send({ mensagem: 'Erro ao gerar URLs assinadas.', erro: error });
+  }
 };
 
 /*

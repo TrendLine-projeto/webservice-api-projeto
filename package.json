@@ -14,6 +14,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.978.0",
+    "@aws-sdk/s3-request-presigner": "^3.978.0",
     "axios": "^1.8.4",
     "bcrypt": "^5.1.0",
     "body-parser": "^1.20.1",
@@ -30,8 +32,8 @@
     "multer": "^1.4.5-lts.1",
     "mysql": "^2.18.1",
     "mysql2": "^2.3.3",
-    "node-sped-pdf": "^1.0.65",
     "node-localstorage": "^2.2.1",
+    "node-sped-pdf": "^1.0.65",
     "qrcode": "^1.5.4",
     "sharp": "^0.33.4",
     "swagger-jsdoc": "^6.2.8",

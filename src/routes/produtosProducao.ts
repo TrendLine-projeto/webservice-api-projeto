@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import * as produtosProducaoController from '../controllers/producaoProdutosController';
+import upload from '../middleware/upload';
 import * as login from '../middleware/login';
 
 /**
@@ -85,6 +86,69 @@ router.post('/produtos_producao/buscar', produtosProducaoController.buscarProdut
  *         description: Produto nao encontrado.
  */
 router.get('/produtos_producao/:id', produtosProducaoController.buscarProdutoPorId);
+
+/**
+ * @swagger
+ * /produtorProducao/produtos_producao/{id}/anexos:
+ *   post:
+ *     summary: Envia um anexo (imagem) para o produto de producao.
+ *     tags: [ProdutosProducao]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               arquivo:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       201:
+ *         description: Anexo enviado.
+ *       404:
+ *         description: Produto nao encontrado.
+ */
+router.post(
+  '/produtos_producao/:id/anexos',
+  upload.single('arquivo'),
+  produtosProducaoController.anexarProduto
+);
+
+/**
+ * @swagger
+ * /produtorProducao/produtos_producao/{id}/anexos/assinados:
+ *   get:
+ *     summary: Gera URLs assinadas para os anexos de um produto.
+ *     tags: [ProdutosProducao]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: expiresIn
+ *         required: false
+ *         schema:
+ *           type: integer
+ *           description: Tempo em segundos para expirar a URL assinada.
+ *     responses:
+ *       200:
+ *         description: URLs assinadas geradas.
+ *       404:
+ *         description: Produto nao encontrado.
+ */
+router.get(
+  '/produtos_producao/:id/anexos/assinados',
+  produtosProducaoController.buscarAnexosAssinados
+);
 
 /**
  * @swagger

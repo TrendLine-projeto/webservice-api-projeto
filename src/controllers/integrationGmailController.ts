@@ -2,7 +2,10 @@ import { Request, Response } from 'express';
 import { importarGmailXml, importarGmailXmlTodas } from '../service/integration/gmailImport';
 import * as notasFiscaisModel from '../models/notaFiscal';
 import * as gmailXmlModel from '../models/integrationsGmailXml';
-type NodeSpedPdfModule = typeof import('node-sped-pdf');
+type NodeSpedPdfModule = {
+  DANFe: (options: { xml: string }) => Promise<Buffer | Uint8Array | string>;
+  DANFCe: (options: { xml: string }) => Promise<Buffer | Uint8Array | string>;
+};
 
 let nodeSpedPdfModule: NodeSpedPdfModule | null = null;
 

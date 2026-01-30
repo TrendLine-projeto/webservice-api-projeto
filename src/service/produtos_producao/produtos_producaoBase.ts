@@ -1,4 +1,6 @@
 import * as ProdutosSupriModel from '../../models/produtosProducao';
+import * as AnexosModel from '../../models/anexos';
+import { getSignedUrlFromUrl } from '../storage/s3';
 import { ProdutoProducao } from '../../types/ProdutoProducao/ProdutoProducao';
 import { createBlingProduct } from '../../integration/bling/produtos/produtos.api';
 import { mapProdutoToBlingPayload }from '../../integration/bling/produtos/bling-product.dto'
@@ -40,6 +42,32 @@ const criarNotificacaoProdutoProducao = async (
     tipo: acao,
     idCliente: Number(payload.idCliente)
   });
+};
+
+const assinarUrl = async (url: string) => {
+  try {
+    return await getSignedUrlFromUrl(url);
+  } catch {
+    return url;
+  }
+};
+
+const anexarUrlsAProdutos = async (produtos: any[]) => {
+  if (!produtos?.length) return produtos;
+  const ids = produtos
+    .map((produto) => Number(produto?.id))
+    .filter((id) => Number.isFinite(id) && id > 0);
+  const anexosPorProduto = await AnexosModel.buscarAnexosPorProdutoIds(ids);
+  return await Promise.all(
+    produtos.map(async (produto) => {
+      const anexos = anexosPorProduto[Number(produto.id)] || [];
+      const urls = await Promise.all(anexos.map((anexo) => assinarUrl(anexo.url)));
+      return {
+        ...produto,
+        anexos: urls,
+      };
+    })
+  );
 };
 
 export const criarProduto = async (entradaProduto: ProdutoProducao) => {
@@ -100,12 +128,13 @@ export const buscarProdutosPorCliente = async (filtros: any) => {
         quantidadePorPagina,
         ...outrosFiltros
     });
+    const produtos = await anexarUrlsAProdutos(resultado.produtos);
 
     return {
         paginaAtual: pagina,
         quantidadePorPagina,
         totalRegistros: resultado.totalRegistros,
-        produtos: resultado.produtos
+        produtos
     };
 };
 
@@ -115,7 +144,13 @@ export const buscarProdutoPorId = async (id: number) => {
     }
 
     const produto = await ProdutosSupriModel.buscarProdutoPorId(id);
-    return produto;
+    if (!produto) return produto;
+    const anexos = await AnexosModel.buscarAnexosPorProdutoId(id);
+    const urls = await Promise.all(anexos.map((anexo) => assinarUrl(anexo.url)));
+    return {
+      ...produto,
+      anexos: urls,
+    };
 };
 
 export const atualizarProdutoPorId = async (id: number, body: ProdutoProducao) => {
