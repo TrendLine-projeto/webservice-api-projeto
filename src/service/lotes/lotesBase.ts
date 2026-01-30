@@ -6,6 +6,8 @@ import * as notasFiscais from '../../models/notaFiscal';
 import * as lotesFechamentoModel from '../../models/lotesFechamento';
 import * as conferenciasQualidadeModel from '../../models/conferenciasQualidade';
 import * as conferenciaQualidadeDefeitosModel from '../../models/conferenciaQualidadeDefeitos';
+import * as AnexosModel from '../../models/anexos';
+import { getSignedUrlFromUrl } from '../storage/s3';
 import { EntradaDeLote } from '../../types/lotes/EntradaDeLote';
 import { LotePut } from '../../types/lotes/AlterarLote';
 import { NotaFiscal } from '../../types/notasFiscais/notaFiscal';
@@ -21,6 +23,14 @@ const agoraFormatado = (): string => {
   const d = new Date();
   return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())} ` +
     `${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}`;
+};
+
+const assinarUrl = async (url: string) => {
+  try {
+    return await getSignedUrlFromUrl(url);
+  } catch {
+    return url;
+  }
 };
 
 export const criarLote = async (
@@ -95,26 +105,29 @@ export const buscarLotesPorCliente = async (filtros: any) => {
     .flat()
     .map((conferencia: any) => conferencia.id);
   const defeitosPorConferencia = await conferenciaQualidadeDefeitosModel.buscarPorConferenciaIds(conferenciaIds);
+  const anexosPorProduto = await AnexosModel.buscarAnexosPorProdutoIds(produtoIds);
 
-  const montarProdutos = (loteId: number) => {
+  const montarProdutos = async (loteId: number) => {
     const produtos = produtosPorLote[loteId] || [];
-    return produtos.map((produto: any) => {
+    return await Promise.all(produtos.map(async (produto: any) => {
       const conferencias = conferenciasPorProduto[produto.id] || [];
       const conferenciasComDefeitos = conferencias.map((conferencia: any) => ({
         ...conferencia,
         defeitos: defeitosPorConferencia[conferencia.id] || []
       }));
-      return { ...produto, conferencias: conferenciasComDefeitos };
-    });
+      const anexos = anexosPorProduto[Number(produto.id)] || [];
+      const urls = await Promise.all(anexos.map((anexo) => assinarUrl(anexo.url)));
+      return { ...produto, conferencias: conferenciasComDefeitos, anexos: urls };
+    }));
   };
 
-  const lotesComDados = resultado.lotes.map((lote: any) => ({
+  const lotesComDados = await Promise.all(resultado.lotes.map(async (lote: any) => ({
     ...lote,
     fornecedor: fornecedoresPorId[lote.idFornecedor_producao] || null,
     notasFiscais: notasPorLote[lote.id] || [],
-    produtos: montarProdutos(lote.id),
+    produtos: await montarProdutos(lote.id),
     fechamento: fechamentosPorLote[lote.id] || null
-  }));
+  })));
 
   return {
     totalRegistros: resultado.totalRegistros,
@@ -169,14 +182,17 @@ export const buscarLotePorId = async (idLote: number) => {
     .flat()
     .map((conferencia: any) => conferencia.id);
   const defeitosPorConferencia = await conferenciaQualidadeDefeitosModel.buscarPorConferenciaIds(conferenciaIds);
-  const produtosComConferencias = produtosDoLote.map((produto: any) => {
+  const anexosPorProduto = await AnexosModel.buscarAnexosPorProdutoIds(produtoIds);
+  const produtosComConferencias = await Promise.all(produtosDoLote.map(async (produto: any) => {
     const conferencias = conferenciasPorProduto[produto.id] || [];
     const conferenciasComDefeitos = conferencias.map((conferencia: any) => ({
       ...conferencia,
       defeitos: defeitosPorConferencia[conferencia.id] || []
     }));
-    return { ...produto, conferencias: conferenciasComDefeitos };
-  });
+    const anexos = anexosPorProduto[Number(produto.id)] || [];
+    const urls = await Promise.all(anexos.map((anexo) => assinarUrl(anexo.url)));
+    return { ...produto, conferencias: conferenciasComDefeitos, anexos: urls };
+  }));
 
   return {
     ...lote,
