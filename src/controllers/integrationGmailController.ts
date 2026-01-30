@@ -2,7 +2,17 @@ import { Request, Response } from 'express';
 import { importarGmailXml, importarGmailXmlTodas } from '../service/integration/gmailImport';
 import * as notasFiscaisModel from '../models/notaFiscal';
 import * as gmailXmlModel from '../models/integrationsGmailXml';
-import { DANFe, DANFCe } from 'node-sped-pdf';
+type NodeSpedPdfModule = typeof import('node-sped-pdf');
+
+let nodeSpedPdfModule: NodeSpedPdfModule | null = null;
+
+const loadNodeSpedPdf = async (): Promise<NodeSpedPdfModule> => {
+  if (!nodeSpedPdfModule) {
+    const loader = new Function('return import("node-sped-pdf")');
+    nodeSpedPdfModule = (await loader()) as NodeSpedPdfModule;
+  }
+  return nodeSpedPdfModule as NodeSpedPdfModule;
+};
 
 const normalizeXml = (xml: string) => String(xml || '').replace(/^\uFEFF/, '').trim();
 const isNfeXml = (xml: string) => /<nfeProc\b|<NFe\b/i.test(xml);
@@ -39,6 +49,7 @@ const obterXmlPorNotaFiscal = async (id: number) => {
 };
 
 const gerarPdfNotaFiscal = async (xml: string) => {
+  const { DANFe, DANFCe } = await loadNodeSpedPdf();
   try {
     return await DANFe({ xml });
   } catch (error) {
