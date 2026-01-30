@@ -193,16 +193,39 @@ export const anexarProduto = async (req: Request, res: Response) => {
     return res.status(400).send({ mensagem: 'ID do produto invalido' });
   }
 
-  const file = req.file;
-  if (!file) {
+  const rawFiles = req.files;
+  let files: Express.Multer.File[] = [];
+  if (Array.isArray(rawFiles)) {
+    files = rawFiles as Express.Multer.File[];
+  } else if (rawFiles && typeof rawFiles === 'object') {
+    const fromField = (rawFiles as Record<string, Express.Multer.File[]>).arquivo;
+    if (Array.isArray(fromField)) {
+      files = fromField;
+    }
+  }
+
+  if (!files.length && req.file) {
+    files = [req.file];
+  }
+
+  if (!files.length) {
     return res.status(400).send({ mensagem: 'Arquivo nao informado.' });
   }
 
   try {
-    const anexo = await anexosService.anexarProduto(id, file);
+    const anexos = await Promise.all(files.map((file) => anexosService.anexarProduto(id, file)));
+
+    if (anexos.length === 1) {
+      return res.status(201).send({
+        mensagem: 'Anexo enviado com sucesso.',
+        anexo: anexos[0],
+        anexos,
+      });
+    }
+
     return res.status(201).send({
-      mensagem: 'Anexo enviado com sucesso.',
-      anexo,
+      mensagem: 'Anexos enviados com sucesso.',
+      anexos,
     });
   } catch (error: any) {
     if (error?.tipo === 'NotFound') {

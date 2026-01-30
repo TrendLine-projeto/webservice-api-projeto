@@ -91,7 +91,7 @@ router.get('/produtos_producao/:id', produtosProducaoController.buscarProdutoPor
  * @swagger
  * /produtorProducao/produtos_producao/{id}/anexos:
  *   post:
- *     summary: Envia um anexo (imagem) para o produto de producao.
+ *     summary: Envia anexos (imagens) para o produto de producao.
  *     tags: [ProdutosProducao]
  *     parameters:
  *       - in: path
@@ -107,17 +107,20 @@ router.get('/produtos_producao/:id', produtosProducaoController.buscarProdutoPor
  *             type: object
  *             properties:
  *               arquivo:
- *                 type: string
- *                 format: binary
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   format: binary
+ *                 description: Envie 1 a 5 arquivos com o mesmo campo "arquivo".
  *     responses:
  *       201:
- *         description: Anexo enviado.
+ *         description: Anexo(s) enviado(s).
  *       404:
  *         description: Produto nao encontrado.
  */
 router.post(
   '/produtos_producao/:id/anexos',
-  upload.single('arquivo'),
+  upload.array('arquivo', 5),
   produtosProducaoController.anexarProduto
 );
 
